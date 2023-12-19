@@ -1,0 +1,25 @@
+.tablero{
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    align-items: center;
+    justify-items: center;
+    width: 70%;
+    grid-column: 2/3;
+    aspect-ratio: 1 / 1;
+    background-color: /*#171A4A*/#1c1c1c;
+    margin: 0 auto;
+    box-shadow: 0px 0px  20px -5px white;
+}
+
+@media (max-width:1000px) {
+    .tablero{
+        grid-column: 1/5;
+        grid-row: 1/2;
+        margin-bottom: 20px;
+    }
+
+}
+
+
+
