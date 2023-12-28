@@ -1,9 +1,11 @@
+
+import { ReactNode } from "react";
 import "./css/Turno.css"
 
 type Jugadores = "jugador1" | "jugador2";
 
 type Props = {
-    signo: string;
+    signo: ReactNode;
     classNameP: string;
     jugadorNombre: string;
     seleccionado: Jugadores;
@@ -17,7 +19,7 @@ export default function Turno({signo, classNameP, jugadorNombre, seleccionado, j
             <div className={"contenedorTurnoJugador"}>
                 <p className="turnoJugador" >{jugadorNombre}</p>
                 <div className={seleccionado === jugador ? "contenedorSigno " + className : "contenedorSigno"}>
-                    <p className="signo">{signo}</p>
+                    <p className="signo"><div>{signo}</div></p>
                 </div>
             </div>
         </>
