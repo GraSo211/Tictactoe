@@ -1,3 +1,9 @@
+#circle, #cross {
+    width: 50%;
+    height: 50%;
+}
+
+
 button{
     width:200px;
     height:70px;
@@ -119,9 +125,8 @@ button:hover span{
 
 
 .titulo{
-    /*background-color: ;*/
     text-align: center;
-    width: 35%;
+    width: 50%;
     color: #ffffff;
     border-radius: 20px;
     font-weight: bold;
@@ -165,19 +170,53 @@ button:hover span{
     justify-content: center;
 }
 
+@media (max-width:1900px) {
 
+    .boton{
+        font-size: 15px;
+    }
+
+    .cuadrado{
+        width: 700px;
+        height: 400px;
+    }
+
+    .finalMsj{
+        font-size: 50px;
+    }
+
+
+
+
+
+@media (max-width:1300px) {
+
+    .boton{
+        font-size: 15px;
+    }
+
+    .titulo{
+        font-size: 2em;
+    }
+
+    .cuadrado{
+        width: 700px;
+        height: 400px;
+    }
+
+    .finalMsj{
+        font-size: 50px;
+    }
+
+}
 
 @media (max-width:1000px) {
+
 
     .boton{
         width:150px;
         height:50px;
         font-size: 12px;
-    }
-
-    .titulo{
-        width: 80%;
-        font-size: 40px;
     }
 
     .contenedorTablero{
@@ -194,25 +233,5 @@ button:hover span{
     }
 
 }
-
-@media (max-width:1900px) {
-
-    .boton{
-        font-size: 15px;
-    }
-
-    .titulo{
-        width: 50%;
-        font-size: 80px;
-    }
-
-    .cuadrado{
-        width: 700px;
-        height: 400px;
-    }
-
-    .finalMsj{
-        font-size: 50px;
-    }
 
 }

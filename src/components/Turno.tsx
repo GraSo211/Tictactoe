@@ -19,7 +19,7 @@ export default function Turno({signo, classNameP, jugadorNombre, seleccionado, j
             <div className={"contenedorTurnoJugador"}>
                 <p className="turnoJugador" >{jugadorNombre}</p>
                 <div className={seleccionado === jugador ? "contenedorSigno " + className : "contenedorSigno"}>
-                    <p className="signo"><div>{signo}</div></p>
+                    <p className="signo">{signo}</p>
                 </div>
             </div>
         </>

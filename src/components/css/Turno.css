@@ -34,17 +34,27 @@
     justify-content: center;
     margin: 0;
     align-items: center;
-
 }
 
-.signo{
-    font-size: 500%;
-    margin: 10px;
-    padding: 0 0 15px 0;
-}
+
 
 .seleccionado{
     background-color: #171a4a;
+}
+
+
+@media (max-width:1900px) {
+    
+    .turnoJugador{
+        font-size: 30px;
+    }
+}
+
+@media (max-width:1300px){
+    .contenedorSigno{
+        height: 32%;
+    }
+    
 }
 
 @media (max-width:1000px) {
@@ -57,14 +67,15 @@
     .contenedorTurnoJugador:last-child{
         grid-column: 3/5;
     }
-    
+
+    .contenedorSigno{
+        height: 100%;
+        width: 30%;
+        margin: 0 0 10px 0;
+    }
+
     .turnoJugador{
         font-size: 15px;
-    }
-    
-    .signo{
-        font-size: 70px;
-        padding: 0 0 0 0;
     }
     
     .seleccionado{
@@ -73,15 +84,3 @@
 }
 
 
-@media (max-width:1900px) {
-    
-    .turnoJugador{
-        font-size: 30px;
-    }
-    
-    .signo{
-        font-size: 4em;
-
-    }
-  
-}
