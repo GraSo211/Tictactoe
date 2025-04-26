@@ -31,8 +31,8 @@ export default function Juego() {
     let [empate, setEmpate] = useState<boolean>(false);
 
     // Definir el icono de cada jugador
-    const circle = <RxCircle className="text-blue-500" size={50}></RxCircle>;
-    const cross = <RxCross2 className="text-red-400" size={50}></RxCross2>;
+    const circle = <RxCircle className="text-blue-500  xl:size-[80px]" size={50}></RxCircle>;
+    const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
 
     // Posibles combinaciones de victoria
     const victoria = [
