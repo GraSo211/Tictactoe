@@ -1,4 +1,4 @@
-import "./css/Celda.css"
+
 type Props = {
     index: number;
     marcar: (celda:number)=>void;
@@ -7,8 +7,8 @@ type Props = {
 export default function Celda({index, marcar, array}:Props){
 
     return(<>
-    <div className="celda" id={"c"+index} onClick={()=> marcar(index)}> 
-        <p className="simbolo">
+    <div className="flex bg-black min-h-full min-w-full  justify-center items-center " id={"c"+index} onClick={()=> marcar(index)}> 
+        <p className=" w-fit h-fit">
             {array[index]}
         </p>
     </div>
