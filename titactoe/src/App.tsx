@@ -1,6 +1,6 @@
-
+import "./App.css";
 import Juego from './components/Juego';
-
+import '@fontsource-variable/montserrat';
 
 function App() {
   return (

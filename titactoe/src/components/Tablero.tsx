@@ -11,7 +11,7 @@ export default function Tablero({ tabla, marcar, array }: Props) {
 
     return (
         <>
-            <div className="tablero bg-white  grid  grid-cols-3 grid-rows-3 gap-1 size-[350px] ">
+            <div className=" bg-[#D4C9BE]   grid  grid-cols-3 grid-rows-3 gap-0.5 size-[250px] ">
                 {
                     tabla.map((_, filaIndex)=>{
                         return <Celda key={filaIndex} index={filaIndex} marcar={marcar} array={array}></Celda>
