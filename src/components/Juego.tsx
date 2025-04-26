@@ -1,6 +1,5 @@
 import { ReactNode, useState } from "react";
 import Tablero from "./Tablero";
-import "./css/Juego.css";
 import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
@@ -13,8 +12,8 @@ export default function Juego() {
     let [partida, setPartida] = useState<boolean>(false);
     let [ganador, setGanador] = useState<string>("");
     let [empate, setEmpate] = useState<boolean>(false);
-    const circle =  <RxCircle className="text-blue-500" size={100}></RxCircle>
-    const cross =   <RxCross2 className="text-red-400" size={100}></RxCross2>
+    const circle = <RxCircle className="text-blue-500" size={100}></RxCircle>;
+    const cross = <RxCross2 className="text-red-400" size={100}></RxCross2>;
 
     const victoria = [
         [0, 1, 2],
@@ -34,21 +33,21 @@ export default function Juego() {
                 setPartida(true);
                 const jugador = turno === "jugador1" ? "JUGADOR 1" : "JUGADOR 2";
                 setGanador(jugador);
-                console.log("ganaste")
-                return true
+                console.log("ganaste");
+                return true;
             }
         }
-        return false
+        return false;
     };
 
-    const checkearEmpate = (array:ReactNode[]) => {
-        for (const elem of array){
-            if (elem === null){
-                return
+    const checkearEmpate = (array: ReactNode[]) => {
+        for (const elem of array) {
+            if (elem === null) {
+                return;
             }
         }
-        setEmpate(true)
-    }
+        setEmpate(true);
+    };
 
     function marcarCasilla(celda: number) {
         const turnoJugador: Jugadores = turno;
@@ -58,19 +57,19 @@ export default function Juego() {
         const nuevoArrayRend = [...arrayRend];
         const nuevoArray = [...array];
         if (turno === "jugador1") {
-            nuevoArrayRend[celda] = circle
-            nuevoArray[celda] = "🔵"
+            nuevoArrayRend[celda] = circle;
+            nuevoArray[celda] = "🔵";
             setTurno("jugador2");
         } else {
-            nuevoArrayRend[celda] =  cross
-            nuevoArray[celda] = "❌"
+            nuevoArrayRend[celda] = cross;
+            nuevoArray[celda] = "❌";
             setTurno("jugador1");
         }
         setArrayRend(nuevoArrayRend);
         setArray(nuevoArray);
-        const gano:boolean = checkearVictoria(nuevoArray, turnoJugador);
-        if (!gano){
-            checkearEmpate(nuevoArray)
+        const gano: boolean = checkearVictoria(nuevoArray, turnoJugador);
+        if (!gano) {
+            checkearEmpate(nuevoArray);
         }
     }
 
@@ -83,21 +82,20 @@ export default function Juego() {
     }
 
     return (
-        <>
-            <h1 className="titulo  ">TIC-TAC-TOE</h1>
+        <div className="flex flex-col justify-center text-center ">
+            <h1 className="text-white text-8xl font-semibold  ">TIC-TAC-TOE</h1>
             {juegoIniciado ? (
-                <div className="contenedorTablero">
-                        <Tablero tabla={arrayRend} marcar={marcarCasilla} array={arrayRend}></Tablero>
-                            <Turno signo={circle} classNameP="seleccionado" jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="jugador1"></Turno>
-                            <Turno signo={cross} classNameP="seleccionado" jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="jugador2"></Turno> 
+                <div className=" w-full grid grid-cols-[1fr_2fr_1fr]  place-items-center ">
+                    
+                    <Turno signo={circle} classNameP="seleccionado" jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="jugador1"></Turno>
+                    <Tablero tabla={arrayRend} marcar={marcarCasilla} array={arrayRend}></Tablero>
+                    
+                    <Turno signo={cross} classNameP="seleccionado" jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="jugador2"></Turno>
                 </div>
             ) : (
                 <div className="iniciarPartida">
-                    <button className="boton text-blue-600" onClick={() => setJuego(true)}>
+                    <button className=" text-blue-600" onClick={() => setJuego(true)}>
                         INICIAR JUEGO
-                        <span></span>
-                        <span></span>
-                        <span></span>
                         <span></span>
                     </button>
                 </div>
@@ -109,10 +107,6 @@ export default function Juego() {
                         <h1 className="finalMsj">GANO EL {ganador}</h1>
                         <button className="boton" onClick={reiniciarPartida}>
                             REINICIAR PARTIDA
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
                         </button>
                     </div>
                 </div>
@@ -122,16 +116,12 @@ export default function Juego() {
                 <div className="final">
                     <div className="cuadrado">
                         <h1 className="finalMsj">EMPATE</h1>
-                        <button className="boton" onClick={reiniciarPartida}>
+                        <button className="" onClick={reiniciarPartida}>
                             REINICIAR PARTIDA
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
                         </button>
                     </div>
                 </div>
-            ) : null }
-        </>
+            ) : null}
+        </div>
     );
 }

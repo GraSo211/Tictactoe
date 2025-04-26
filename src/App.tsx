@@ -1,11 +1,11 @@
-import './App.css';
+
 import Juego from './components/Juego';
 
 
 function App() {
   return (
     <div className="App">
-      <div className="contenedor">
+      <div className="w-full h-screen">
       
         <Juego></Juego>
         

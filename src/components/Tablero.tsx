@@ -1,4 +1,4 @@
-import "./css/Tablero.css";
+
 import Celda from "./Celda";
 
 type Props = {
@@ -11,7 +11,7 @@ export default function Tablero({ tabla, marcar, array }: Props) {
 
     return (
         <>
-            <div className="tablero">
+            <div className="tablero bg-white  grid  grid-cols-3 grid-rows-3 gap-1 size-[350px] ">
                 {
                     tabla.map((_, filaIndex)=>{
                         return <Celda key={filaIndex} index={filaIndex} marcar={marcar} array={array}></Celda>

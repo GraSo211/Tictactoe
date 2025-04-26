@@ -16,9 +16,9 @@ export default function Turno({signo, classNameP, jugadorNombre, seleccionado, j
     const className = classNameP
     return(
         <>
-            <div className={"contenedorTurnoJugador"}>
+            <div className={"flex flex-col justify-center items-center  bg-amber-300 mx-2"}>
                 <p className="turnoJugador" >{jugadorNombre}</p>
-                <div className={seleccionado === jugador ? "contenedorSigno " + className : "contenedorSigno"}>
+                <div className={seleccionado === jugador ? className : ""}>
                     <p className="signo ">{signo}</p>
                 </div>
             </div>
