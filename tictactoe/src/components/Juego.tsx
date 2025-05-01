@@ -4,7 +4,7 @@ import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
 
-
+import { io } from 'socket.io-client';
 
 
 export default function Juego() {
