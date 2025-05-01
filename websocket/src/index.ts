@@ -1,5 +1,5 @@
 import express,{ Request, Response } from 'express';
-
+import cors from 'cors';
 import { Server } from 'socket.io';
 import { createServer } from 'node:http';
 
@@ -7,17 +7,23 @@ const port = process.env.PORT || 3000;
 
 const app = express();
 
+app.use(cors());
+
 const server = createServer(app);
 const io = new Server(server);
 
 
 io.on("connection", (socket) => {
     console.log("Usuario conectado")
+
+
+    socket.on("turno", (msg) => {
+        console.log("Mensaje recibido: " + msg);
+        io.emit("turno", "Mensaje devuelto por el servidor");
+    })
 });
 
-app.get("/",(req: Request , res: Response)=>{
-    res.send("Hello World!!!")
-})
+
 
 
 

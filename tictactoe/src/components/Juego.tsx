@@ -1,11 +1,10 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Tablero from "./Tablero";
 import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
 
-import { io } from 'socket.io-client';
-
+import socket from "../socket.js";
 
 export default function Juego() {
     // Jugadores: p1 y p2
@@ -45,6 +44,49 @@ export default function Juego() {
         [1, 4, 7],
         [2, 5, 8],
     ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    useEffect(() => {
+        socket.on("mensaje-del-servidor", (data) => {
+            console.log(data);
+        });
+
+        return () => {
+            socket.off("mensaje-del-servidor");
+        };
+    }, []);
+
+    const enviarMensaje = () => {
+        socket.emit("turno", "acabo de hacer mi jugada!");
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // * Funcion para checkear si algun jugador gano. Checked
     const checkVictoria = (array: ReactNode[], turno: Jugadores) => {
@@ -119,16 +161,28 @@ export default function Juego() {
     return (
         <div className="flex flex-col h-full justify-center text-center ">
             <h1 className="text-[#D4C9BE] text-6xl font-semibold my-5  ">TIC-TAC-TOE</h1>
+
+            <div className="text-white">
+                <h1>Socket.IO en React</h1>
+                <p>Mensaje: {"hola"}</p>
+                <button onClick={enviarMensaje} className="bg-red-400 cursor-pointer p-3">
+                    Enviar Mensaje
+                </button>
+            </div>
+
             {juegoIniciado ? (
                 <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                    <Turno signo={circle}  jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="p1"></Turno>
+                    <Turno signo={circle} jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="p1"></Turno>
                     <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
 
-                    <Turno signo={cross}  jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="p2"></Turno>
+                    <Turno signo={cross} jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="p2"></Turno>
                 </div>
             ) : (
                 <div className="iniciarPartida">
-                    <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 text-[#D4C9BE] font-semibold" onClick={() => setJuego(true)}>
+                    <button
+                        className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 text-[#D4C9BE] font-semibold"
+                        onClick={() => setJuego(true)}
+                    >
                         INICIAR JUEGO
                     </button>
                 </div>
