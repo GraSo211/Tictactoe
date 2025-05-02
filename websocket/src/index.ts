@@ -16,11 +16,13 @@ const io = new Server(server);
 io.on("connection", (socket) => {
     console.log("Usuario conectado")
 
-
+    // Envio de mensaje al cliente
     socket.on("turno", (msg) => {
         console.log("Mensaje recibido: " + msg);
         io.emit("turno", "Mensaje devuelto por el servidor");
+        
     })
+
 
     socket.on("disconnect", () => {
         console.log("Usuario desconectado");
