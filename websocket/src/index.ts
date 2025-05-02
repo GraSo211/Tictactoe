@@ -1,4 +1,4 @@
-import express,{ Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import { createServer } from 'node:http';
@@ -21,6 +21,10 @@ io.on("connection", (socket) => {
         console.log("Mensaje recibido: " + msg);
         io.emit("turno", "Mensaje devuelto por el servidor");
     })
+
+    socket.on("disconnect", () => {
+        console.log("Usuario desconectado");
+    });
 });
 
 
