@@ -33,130 +33,40 @@ export default function Juego() {
     const circle = <RxCircle className="text-blue-500  xl:size-[80px]" size={50}></RxCircle>;
     const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
 
-    // Posibles combinaciones de victoria
-    const victoria = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-    ];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+    const [isConnected, setIsConnected] = useState(socket.connected);
 
     useEffect(() => {
-        socket.on("mensaje-del-servidor", (data) => {
-            console.log(data);
-        });
+        function onConnect() {
+            setIsConnected(true);
+        }
+
+        function onDisconnect() {
+            setIsConnected(false);
+        }
+
+        socket.on("connect", onConnect);
+        socket.on("disconnect", onDisconnect);
 
         return () => {
-            socket.off("mensaje-del-servidor");
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
         };
     }, []);
 
     const enviarMensaje = () => {
+        
         socket.emit("turno", "acabo de hacer mi jugada!");
     };
+    
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // * Funcion para checkear si algun jugador gano. Checked
-    const checkVictoria = (array: ReactNode[], turno: Jugadores) => {
-        for (const arrayGanador of victoria) {
-            const [a, b, c] = arrayGanador;
-            if (array[a] && array[a] === array[b] && array[a] === array[c]) {
-                setPartida(true);
-                const jugador = turno === "p1" ? "JUGADOR 1" : "JUGADOR 2";
-                setGanador(jugador);
-                return true;
-            }
-        }
-        return false;
-    };
-
-    // * Se checkea si hay empate. Checked
-    const checkearEmpate = (array: ReactNode[]) => {
-        for (const elem of array) {
-            if (elem === null) {
-                return;
-            }
-        }
-        setEmpate(true);
-    };
-
-    // * Funcion para marcar la casilla seleccionada.
-    function marcarCasilla(celda: number) {
-        // obtenemos de quien es el turnoa actual.
-        const turnoJugador: Jugadores = turno;
-
-        // Si el jugador toco una celda ya ocupada, no se hace nada.
-        if (arrayRenderized[celda] != null) {
-            return;
-        }
-
-        // Creamos un nuevo array renderized para modificar el estado y que se refleje en la UI.
-        const nuevoarrayRenderized = [...arrayRenderized];
-
-        // Creamos un nuevo array para modificar el estaod de la partida.
-        const nuevoArray = [...array];
-
-        // En el turno del jugador 1, se coloca el svg en el array renderized, se pone un 1 a su celda marcada y se cambia el turno al jugador 2. Para el jugador 2 se hace lo mismo pero con un 0.
-        if (turno === "p1") {
-            nuevoarrayRenderized[celda] = circle;
-            nuevoArray[celda] = "1";
-            setTurno("p2");
-        } else {
-            nuevoarrayRenderized[celda] = cross;
-            nuevoArray[celda] = "0";
-            setTurno("p1");
-        }
-        // Se actualizan los estados de la UI y del array.
-        setarrayRenderized(nuevoarrayRenderized);
-        setArray(nuevoArray);
-
-        // Se checkea victoria y empate.
-        const gano: boolean = checkVictoria(nuevoArray, turnoJugador);
-        if (!gano) {
-            checkearEmpate(nuevoArray);
-        }
+    const joinRoom = () => {
+        socket.emit("join-room", "1");
+        socket.on("room-joined", (message) => {
+            console.log(message);
+        });
     }
 
-    // * Funcion para reiniciar el juego. Checked
-    function reiniciarPartida() {
-        setTurno("p1");
-        setarrayRenderized(Array(9).fill(null));
-        setArray(Array(9).fill(null));
-        setPartida(false);
-        setEmpate(false);
-    }
 
     return (
         <div className="flex flex-col h-full justify-center text-center ">
@@ -164,7 +74,6 @@ export default function Juego() {
 
             <div className="text-white">
                 <h1>Socket.IO en React</h1>
-                <p>Mensaje: {"hola"}</p>
                 <button onClick={enviarMensaje} className="bg-red-400 cursor-pointer p-3">
                     Enviar Mensaje
                 </button>
@@ -178,12 +87,25 @@ export default function Juego() {
                     <Turno signo={cross} jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="p2"></Turno>
                 </div>
             ) : (
-                <div className="iniciarPartida">
+                <div className="flex flex-col gap-3 p-4 relative justify-center items-center">
                     <button
-                        className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 text-[#D4C9BE] font-semibold"
+                        className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
                         onClick={() => setJuego(true)}
                     >
-                        INICIAR JUEGO
+                        JUGAR CONTRA LA IA
+                    </button>
+                    <button
+                        className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"
+                        onClick={() => console.log("xd"
+                        )}
+                    >
+                        CREAR SALA
+                    </button>
+                    <button
+                        className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
+                        onClick={() => joinRoom()}
+                    >
+                        UNIRSE A SALA
                     </button>
                 </div>
             )}
