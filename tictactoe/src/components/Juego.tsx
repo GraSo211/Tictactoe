@@ -5,6 +5,7 @@ import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
 
 import socket from "../socket.js";
+import { create } from "domain";
 
 type Jugadores = "P1" | "P2";
 
@@ -29,16 +30,28 @@ export default function Juego() {
     // Definir si hubo empate
     let [empate, setEmpate] = useState<boolean>(false);
 
+    // Definir el id de la sala
+    let [roomId, setRoomId] = useState<string>("");
+
+
     // Definir el icono de cada jugador
     const circle = <RxCircle className="text-blue-500  xl:size-[80px]" size={50}></RxCircle>;
     const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
+
+
+    // Crear una sala
+    const createRoom = () => {
+        socket.emit("create-room");
+        socket.emit("join-room", roomId);
+        setJuego(true);
+    }
 
     const joinRoom = () => {
         socket.emit("join-room", "1");
     };
 
     const reiniciarPartida = () => {
-        socket.emit("restart-game" );
+        socket.emit("restart-game");
     };
 
     const marcarCasilla = (index: number) => {
@@ -46,12 +59,19 @@ export default function Juego() {
     };
 
     useEffect(() => {
+
+        socket.on("room-created", (roomId) => {
+            setRoomId(roomId);
+        });
+        
+
         socket.on("room-joined", (message) => {
             console.log(message);
-            setJuego(true);
+            
         });
 
         socket.on("game-started", (data) => {
+            console.log(data);
             setTurno(data.turno);
             setArray(data.arrayPartida);
             setarrayRenderized(data.arrayPartida);
@@ -59,6 +79,7 @@ export default function Juego() {
 
         socket.on("move-made", (data) => {
             setArray(data.arrayPartida);
+            setTurno(data.turno);
         });
 
         socket.on("game-won", (data) => {
@@ -72,13 +93,11 @@ export default function Juego() {
             setarrayRenderized(data.arrayPartida);
             setPartida(data.partida);
             setEmpate(data.empate);
-        })
+        });
 
         socket.on("game-finished", (data) => {
             setEmpate(data.resultado);
         });
-
-
 
         return () => {
             socket.off("room-joined");
@@ -86,6 +105,9 @@ export default function Juego() {
             socket.off("move-made");
             socket.off("game-won");
             socket.off("game-restarted");
+            socket.off("game-finished");
+
+
         };
     }, []);
 
@@ -123,7 +145,7 @@ export default function Juego() {
                     </button>
                     <button
                         className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"
-                        onClick={() => console.log("xd")}
+                        onClick={() => createRoom()}
                     >
                         CREAR SALA
                     </button>
