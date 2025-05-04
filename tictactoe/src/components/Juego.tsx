@@ -38,10 +38,7 @@ export default function Juego() {
     };
 
     const reiniciarPartida = () => {
-        socket.emit(
-            "restart-game"
-            // todo: veremos...
-        );
+        socket.emit("restart-game" );
     };
 
     const marcarCasilla = (index: number) => {
@@ -64,30 +61,43 @@ export default function Juego() {
             setArray(data.arrayPartida);
         });
 
-
         socket.on("game-won", (data) => {
-            
             setGanador(data.ganador);
             setPartida(data.partida);
         });
+
+        socket.on("game-restarted", (data) => {
+            setTurno(data.turno);
+            setArray(data.arrayPartida);
+            setarrayRenderized(data.arrayPartida);
+            setPartida(data.partida);
+            setEmpate(data.empate);
+        })
+
+        socket.on("game-finished", (data) => {
+            setEmpate(data.resultado);
+        });
+
 
 
         return () => {
             socket.off("room-joined");
             socket.off("game-started");
             socket.off("move-made");
+            socket.off("game-won");
+            socket.off("game-restarted");
         };
     }, []);
 
     useEffect(() => {
         const newArray = array.map((elem) => {
-                if (elem === "1") {
-                    return circle;
-                } else if (elem === "0") {
-                    return cross;
-                } else {
-                    return null;
-                }
+            if (elem === "1") {
+                return circle;
+            } else if (elem === "0") {
+                return cross;
+            } else {
+                return null;
+            }
         });
         setarrayRenderized(newArray);
     }, [array]);
