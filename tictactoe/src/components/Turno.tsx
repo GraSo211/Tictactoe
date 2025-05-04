@@ -1,7 +1,7 @@
 
 import { ReactNode } from "react";
 
-type Jugadores = "p1" | "p2";
+type Jugadores = "P1" | "P2";
 
 type Props = {
     signo: ReactNode;

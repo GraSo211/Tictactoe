@@ -5,7 +5,9 @@
         "target": "ESNext",
         "outDir": "dist",
         "esModuleInterop": true, // Necesario para Express
-        "sourceMap": true
+        "sourceMap": true,
+        "allowImportingTsExtensions": true,
+        "noEmit": true
     },
     "include": ["src/**/*",]
 }

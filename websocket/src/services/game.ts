@@ -50,6 +50,7 @@ const checkVictoria = (array: Number[], turno: Jugadores) => {
             const jugador = turno;
             setGanador(jugador);
             return true;
+            
         }
     }
     return false;
@@ -99,3 +100,5 @@ function reiniciarPartida() {
     setPartida(false);
     setEmpate(false);
 }
+
+export {turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciarPartida};

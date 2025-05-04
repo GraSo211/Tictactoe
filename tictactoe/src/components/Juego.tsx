@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, use, useEffect, useState } from "react";
 import Tablero from "./Tablero";
 import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
@@ -6,11 +6,11 @@ import { RxCross2 } from "react-icons/rx";
 
 import socket from "../socket.js";
 
+type Jugadores = "P1" | "P2";
+
 export default function Juego() {
-    // Jugadores: p1 y p2
-    type Jugadores = "p1" | "p2";
-    // Turno de jugadores
-    let [turno, setTurno] = useState<Jugadores>("p1");
+    let [turno, setTurno] = useState<Jugadores>("P1");
+
     // Array que se muestra en la UI
     let [arrayRenderized, setarrayRenderized] = useState(Array(9).fill(null));
 
@@ -33,58 +33,75 @@ export default function Juego() {
     const circle = <RxCircle className="text-blue-500  xl:size-[80px]" size={50}></RxCircle>;
     const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
 
-    const [isConnected, setIsConnected] = useState(socket.connected);
+    const joinRoom = () => {
+        socket.emit("join-room", "1");
+    };
+
+    const reiniciarPartida = () => {
+        socket.emit(
+            "restart-game"
+            // todo: veremos...
+        );
+    };
+
+    const marcarCasilla = (index: number) => {
+        socket.emit("make-move", { index: index });
+    };
 
     useEffect(() => {
-        function onConnect() {
-            setIsConnected(true);
-        }
+        socket.on("room-joined", (message) => {
+            console.log(message);
+            setJuego(true);
+        });
 
-        function onDisconnect() {
-            setIsConnected(false);
-        }
+        socket.on("game-started", (data) => {
+            setTurno(data.turno);
+            setArray(data.arrayPartida);
+            setarrayRenderized(data.arrayPartida);
+        });
 
-        socket.on("connect", onConnect);
-        socket.on("disconnect", onDisconnect);
+        socket.on("move-made", (data) => {
+            setArray(data.arrayPartida);
+        });
+
+
+        socket.on("game-won", (data) => {
+            
+            setGanador(data.ganador);
+            setPartida(data.partida);
+        });
+
 
         return () => {
-            socket.off("connect", onConnect);
-            socket.off("disconnect", onDisconnect);
+            socket.off("room-joined");
+            socket.off("game-started");
+            socket.off("move-made");
         };
     }, []);
 
-    const enviarMensaje = () => {
-        
-        socket.emit("turno", "acabo de hacer mi jugada!");
-    };
-    
-
-
-    const joinRoom = () => {
-        socket.emit("join-room", "1");
-        socket.on("room-joined", (message) => {
-            console.log(message);
+    useEffect(() => {
+        const newArray = array.map((elem) => {
+                if (elem === "1") {
+                    return circle;
+                } else if (elem === "0") {
+                    return cross;
+                } else {
+                    return null;
+                }
         });
-    }
-
+        setarrayRenderized(newArray);
+    }, [array]);
 
     return (
         <div className="flex flex-col h-full justify-center text-center ">
             <h1 className="text-[#D4C9BE] text-6xl font-semibold my-5  ">TIC-TAC-TOE</h1>
 
-            <div className="text-white">
-                <h1>Socket.IO en React</h1>
-                <button onClick={enviarMensaje} className="bg-red-400 cursor-pointer p-3">
-                    Enviar Mensaje
-                </button>
-            </div>
-
             {juegoIniciado ? (
                 <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                    <Turno signo={circle} jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="p1"></Turno>
+                    <Turno signo={circle} jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="P1"></Turno>
                     <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
 
-                    <Turno signo={cross} jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="p2"></Turno>
+                    <Turno signo={cross} jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="P2"></Turno>
                 </div>
             ) : (
                 <div className="flex flex-col gap-3 p-4 relative justify-center items-center">
@@ -96,8 +113,7 @@ export default function Juego() {
                     </button>
                     <button
                         className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"
-                        onClick={() => console.log("xd"
-                        )}
+                        onClick={() => console.log("xd")}
                     >
                         CREAR SALA
                     </button>
