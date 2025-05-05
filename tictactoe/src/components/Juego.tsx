@@ -1,4 +1,4 @@
-import { ReactNode, use, useEffect, useState } from "react";
+import { ReactNode, use, useEffect, useRef, useState } from "react";
 import Tablero from "./Tablero";
 import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
@@ -7,31 +7,38 @@ import { RxCross2 } from "react-icons/rx";
 import socket from "../socket.js";
 import { create } from "domain";
 
-type Jugadores = "P1" | "P2";
+
 
 export default function Juego() {
-    let [turno, setTurno] = useState<Jugadores>("P1");
+
+    const refNickname = useRef<HTMLInputElement>(null);
+    const [nickname, setNickname] = useState<string>("");
+
+    const [player1, setPlayer1] = useState<string>("P1");
+    const [player2, setPlayer2] = useState<string>("P2");
+
+    const [turno, setTurno] = useState<string>("P1");
 
     // Array que se muestra en la UI
-    let [arrayRenderized, setarrayRenderized] = useState(Array(9).fill(null));
+    const [arrayRenderized, setarrayRenderized] = useState(Array(9).fill(null));
 
     // Array que guarda el estado del juego.
-    let [array, setArray] = useState(Array(9).fill(null));
+    const [array, setArray] = useState(Array(9).fill(null));
 
     // Boolean para saber si la partida se esta jugando
-    let [juegoIniciado, setJuego] = useState<boolean>(false);
+    const [juegoIniciado, setJuego] = useState<boolean>(false);
 
     // Boolean para saber si la partida ya finalizo
-    let [partida, setPartida] = useState<boolean>(false);
+    const [partida, setPartida] = useState<boolean>(false);
 
     // Definir el nombre del ganador
-    let [ganador, setGanador] = useState<string>("");
+    const [ganador, setGanador] = useState<string>("");
 
     // Definir si hubo empate
-    let [empate, setEmpate] = useState<boolean>(false);
+    const [empate, setEmpate] = useState<boolean>(false);
 
     // Definir el id de la sala
-    let [roomId, setRoomId] = useState<string>("");
+    const [roomId, setRoomId] = useState<string>("");
 
 
     // Definir el icono de cada jugador
@@ -39,7 +46,11 @@ export default function Juego() {
     const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
 
 
-    // Crear una sala
+
+
+    // todo: cambiar eln ombre de los juigadores, que el jugador del que sea el turno sea el que pueda clickear
+
+    // Salas
     const createRoom = () => {
         socket.emit("create-room");
         socket.emit("join-room", roomId);
@@ -50,6 +61,7 @@ export default function Juego() {
         socket.emit("join-room", "1");
     };
 
+    // Partida
     const reiniciarPartida = () => {
         socket.emit("restart-game");
     };
@@ -58,7 +70,17 @@ export default function Juego() {
         socket.emit("make-move", { index: index });
     };
 
+    // Jugadores
+    useEffect(()=>{
+        socket.emit("set-nickname", nickname);
+    },[nickname])
+
     useEffect(() => {
+
+        socket.on("game-players",(data)=>{
+            setPlayer1(data.player1);
+            setPlayer2(data.player2);
+        })
 
         socket.on("room-created", (roomId) => {
             setRoomId(roomId);
@@ -130,13 +152,12 @@ export default function Juego() {
 
             {juegoIniciado ? (
                 <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                    <Turno signo={circle} jugadorNombre="JUGADOR 1" seleccionado={turno} jugador="P1"></Turno>
+                    <Turno signo={circle} jugadorNombre={player1} seleccionado={turno} jugador="P1"></Turno>
                     <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
-
-                    <Turno signo={cross} jugadorNombre="JUGADOR 2" seleccionado={turno} jugador="P2"></Turno>
+                    <Turno signo={cross} jugadorNombre={player2} seleccionado={turno} jugador="P2"></Turno>
                 </div>
             ) : (
-                <div className="flex flex-col gap-3 p-4 relative justify-center items-center">
+                <div className="flex flex-col gap-3 p-4  justify-center items-center">
                     <button
                         className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
                         onClick={() => setJuego(true)}
@@ -155,6 +176,15 @@ export default function Juego() {
                     >
                         UNIRSE A SALA
                     </button>
+
+                    <span className="flex flex-col gap-3 border  justify-center items-center text-[#D4C9BE] border-[#D4C9BE] p-2 rounded-sm text-md  font-semibold absolute bottom-10 left-10">
+                        <p>Ingresa tu Nickname</p>
+                        <span className="flex flex-col gap-1 text-xs justify-center items-center">
+                            <input className="bg-slate-700 rounded-sm p-2" type="text" placeholder="Tu Nickname" ref={refNickname} />
+                            <button className="cursor-pointer bg-[#123458]  p-2 rounded-xl hover:animate-none hover:scale-105  " onClick={()=>{setNickname(refNickname.current!.value) }}>Aceptar</button>
+                        </span>
+            
+                    </span>
                 </div>
             )}
 
