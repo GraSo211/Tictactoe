@@ -1,6 +1,6 @@
 // * Funcion para checkear si algun jugador gano. Checked
 
-type Jugadores = "P1" | "P2";
+type Jugadores = string;
 
 
 let turno: Jugadores = "P1";

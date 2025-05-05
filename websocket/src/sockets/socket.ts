@@ -4,7 +4,7 @@ export default function (io) {
     const rooms = {};
     io.on("connection", (socket) => {
         console.log("Nuevo cliente conectado:", socket.id);
-
+        console.log(rooms)
         // Logica de Salas
         socket.on("create-room", () => {
             console.log("joining.....")
@@ -30,6 +30,25 @@ export default function (io) {
                 });
             }
         });
+
+
+        // Logica de Jugadores
+        socket.emit("game-players",{
+            //player1: rooms[socket.data.roomId].P1,
+            player2:"Chanto"
+        })
+
+        socket.on("set-nickname", (nickname) => {
+            const roomId = socket.data.roomId;
+            if (rooms[roomId]) {
+                if (rooms[roomId].P1 === socket.id) {
+                    rooms[roomId].P1 = nickname;
+                } else if (rooms[roomId].P2 === socket.id) {
+                    rooms[roomId].P2 = nickname;
+                }
+            }
+        });
+
 
         // Logica de Juego
         socket.on("start-game", (data) => {
