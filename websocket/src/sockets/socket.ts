@@ -4,39 +4,63 @@ export default function (io) {
     const rooms = {};
     io.on("connection", (socket) => {
         console.log("Nuevo cliente conectado:", socket.id);
-        console.log(rooms)
+        
+
+
         // Logica de Salas
         socket.on("create-room", () => {
-            console.log("joining.....")
             const roomId =  crypto.randomUUID();
-            socket.join(roomId);
             socket.emit("room-created", roomId);
         });
 
-        socket.on("join-room", (roomId) => {
-            socket.join(roomId);
-            socket.data.roomId = roomId;
-            if (!rooms[roomId]) rooms[roomId] = {};
-            if (!rooms[roomId].P1) {
-                rooms[roomId].P1 = socket.id;
-                socket.emit("role-assigned", "P1");
-            } else if (!rooms[roomId].P2) {
-                rooms[roomId].P2 = socket.id;
-                socket.emit("role-assigned", "P2");
+        socket.on("join-room", (data) => {
+            const roomId = data.roomId;
+            const room = rooms[roomId] || {};
 
-                io.to(roomId).emit("game-started", {
-                    turno: "P1",
-                    jugadores: rooms[roomId],
-                });
+
+
+        
+            // Verificar si el socket ya está en la sala
+            if (room.P1 === socket.id || room.P2 === socket.id) {
+                return;
             }
+
+            socket.join(roomId);
+        
+            // Asignar roles
+            if (!room.P1) {
+                room.P1 = socket.id;
+                socket.emit("role-assigned", "P1");
+            } else if (!room.P2) {
+                room.P2 = socket.id;
+                socket.emit("role-assigned", "P2");
+        
+                // Iniciar el juego cuando ambos jugadores están presentes
+                console.log("\n\n Veamos el juego: ", room, "\n\n")
+                io.to(roomId).emit("game-started", {
+                    turno: room.P1 ,
+                    jugadores: room,
+                    arrayPartida: arrayPartida,
+                });
+
+                socket.emit("game-players",{
+                    player1: rooms[roomId].P1,
+                    player2: rooms[roomId].P2 
+                })
+            } else {
+                return;
+            }
+            
+        
+            // Unir al socket a la sala y actualizar la información de la sala
+            
+            rooms[roomId] = room;
+            console.log(rooms);
         });
 
 
         // Logica de Jugadores
-        socket.emit("game-players",{
-            //player1: rooms[socket.data.roomId].P1,
-            player2:"Chanto"
-        })
+
 
         socket.on("set-nickname", (nickname) => {
             const roomId = socket.data.roomId;
