@@ -5,7 +5,7 @@ import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
 
 import socket from "../socket.js";
-import { create } from "domain";
+
 
 
 
@@ -53,12 +53,10 @@ export default function Juego() {
     // Salas
     const createRoom = () => {
         socket.emit("create-room");
-        socket.emit("join-room", roomId);
-        setJuego(true);
     }
 
     const joinRoom = () => {
-        socket.emit("join-room", "1");
+        socket.emit("join-room", {roomId:roomId});
     };
 
     // Partida
@@ -77,6 +75,9 @@ export default function Juego() {
 
     useEffect(() => {
 
+    
+
+
         socket.on("game-players",(data)=>{
             setPlayer1(data.player1);
             setPlayer2(data.player2);
@@ -84,6 +85,7 @@ export default function Juego() {
 
         socket.on("room-created", (roomId) => {
             setRoomId(roomId);
+            socket.emit("join-room", {roomId:roomId});
         });
         
 
@@ -93,6 +95,7 @@ export default function Juego() {
         });
 
         socket.on("game-started", (data) => {
+            setJuego(true);
             console.log(data);
             setTurno(data.turno);
             setArray(data.arrayPartida);
@@ -185,6 +188,16 @@ export default function Juego() {
                         </span>
             
                     </span>
+
+                    <span className="flex flex-col gap-3 border  justify-center items-center text-[#D4C9BE] border-[#D4C9BE] p-2 rounded-sm text-md  font-semibold absolute bottom-10 left-80">
+                        <p>Ingresa la Sala</p>
+                        <span className="flex flex-col gap-1 text-xs justify-center items-center">
+                            <input className="bg-slate-700 rounded-sm p-2" type="text" placeholder="Tu Nickname" ref={refNickname} />
+                            <button className="cursor-pointer bg-[#123458]  p-2 rounded-xl hover:animate-none hover:scale-105  " onClick={()=>{setRoomId(refNickname.current!.value) }}>Aceptar</button>
+                        </span>
+            
+                    </span>
+                    <span className="absolute text-white top-0 font-semibold right-60  ">Room: {roomId}</span>
                 </div>
             )}
 
