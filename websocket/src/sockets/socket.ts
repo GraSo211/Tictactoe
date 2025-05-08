@@ -2,6 +2,7 @@ import { turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciar
 
 export default function (io) {
     const rooms = {};
+
     io.on("connection", (socket) => {
         console.log("Nuevo cliente conectado:", socket.id);
         
@@ -26,7 +27,7 @@ export default function (io) {
             }
 
             socket.join(roomId);
-        
+            socket.data.roomId = roomId;
             // Asignar roles
             if (!room.P1) {
                 room.P1 = socket.id;
@@ -76,6 +77,7 @@ export default function (io) {
 
         // Logica de Juego
         socket.on("start-game", (data) => {
+            console.log("Empezando el juego",socket.data.roomId);
             const roomId = socket.data.roomId;
 
             io.to(roomId).emit("game-started", {
@@ -97,9 +99,15 @@ export default function (io) {
 
         socket.on("make-move", (data) => {
             const roomId = socket.data.roomId;
+            console.log("room:" ,roomId)
             marcarCasilla(data.index);
 
+            console.log("📥 Movimiento hecho por:", socket.id);
+            console.log("turno:", turno);
+            //if(turno != socket.id)return
+
             io.to(roomId).emit("move-made", { arrayPartida: arrayPartida, turno: turno });
+            console.log(arrayPartida)
             if (partida) {
                 io.to(roomId).emit("game-won", {
                     ganador: ganador,
