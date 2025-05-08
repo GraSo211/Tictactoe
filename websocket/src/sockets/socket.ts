@@ -4,13 +4,10 @@ export default function (io) {
     const rooms = {};
 
     io.on("connection", (socket) => {
-        console.log("Nuevo cliente conectado:", socket.id);
-        
-
-
         // Logica de Salas
+        
         socket.on("create-room", () => {
-            const roomId =  crypto.randomUUID();
+            const roomId = crypto.randomUUID();
             socket.emit("room-created", roomId);
         });
 
@@ -18,9 +15,6 @@ export default function (io) {
             const roomId = data.roomId;
             const room = rooms[roomId] || {};
 
-
-
-        
             // Verificar si el socket ya está en la sala
             if (room.P1 === socket.id || room.P2 === socket.id) {
                 return;
@@ -35,33 +29,30 @@ export default function (io) {
             } else if (!room.P2) {
                 room.P2 = socket.id;
                 socket.emit("role-assigned", "P2");
-        
+
                 // Iniciar el juego cuando ambos jugadores están presentes
-                console.log("\n\n Veamos el juego: ", room, "\n\n")
+                console.log("\n\n Veamos el juego: ", room, "\n\n");
                 io.to(roomId).emit("game-started", {
-                    turno: room.P1 ,
+                    turno: room.P1,
                     jugadores: room,
                     arrayPartida: arrayPartida,
                 });
 
-                socket.emit("game-players",{
+                socket.emit("game-players", {
                     player1: rooms[roomId].P1,
-                    player2: rooms[roomId].P2 
-                })
+                    player2: rooms[roomId].P2,
+                });
             } else {
                 return;
             }
-            
-        
+
             // Unir al socket a la sala y actualizar la información de la sala
-            
+
             rooms[roomId] = room;
             console.log(rooms);
         });
 
-
         // Logica de Jugadores
-
 
         socket.on("set-nickname", (nickname) => {
             const roomId = socket.data.roomId;
@@ -74,10 +65,8 @@ export default function (io) {
             }
         });
 
-
         // Logica de Juego
         socket.on("start-game", (data) => {
-            console.log("Empezando el juego",socket.data.roomId);
             const roomId = socket.data.roomId;
 
             io.to(roomId).emit("game-started", {
@@ -99,21 +88,21 @@ export default function (io) {
 
         socket.on("make-move", (data) => {
             const roomId = socket.data.roomId;
-            console.log("room:" ,roomId)
+            const p1 = rooms[roomId].P1;
+            const p2 = rooms[roomId].P2;
+            if (turno === "P1" && p1 != socket.id) return;
+            if (turno === "P2" && p2 != socket.id) return;
+
             marcarCasilla(data.index);
-
-            console.log("📥 Movimiento hecho por:", socket.id);
-            console.log("turno:", turno);
-            //if(turno != socket.id)return
-
             io.to(roomId).emit("move-made", { arrayPartida: arrayPartida, turno: turno });
-            console.log(arrayPartida)
+
             if (partida) {
                 io.to(roomId).emit("game-won", {
                     ganador: ganador,
                     partida: partida,
                 });
             }
+
             if (empate) {
                 io.to(roomId).emit("game-finished", {
                     resultado: empate,
@@ -123,7 +112,6 @@ export default function (io) {
 
         socket.on("disconnect", () => {
             const roomId = socket.data.roomId;
-            console.log("Cliente desconectado:", socket.id);
             reiniciarPartida();
             io.to(roomId).emit("game-restarted", {
                 turno: turno,
