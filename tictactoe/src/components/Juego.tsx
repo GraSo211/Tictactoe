@@ -103,6 +103,8 @@ export default function Juego() {
         });
 
         socket.on("move-made", (data) => {
+            console.log(data)
+            console.log(data.arrayPartida);
             setArray(data.arrayPartida);
             setTurno(data.turno);
         });
