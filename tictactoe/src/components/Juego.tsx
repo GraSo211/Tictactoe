@@ -38,6 +38,7 @@ export default function Juego() {
     const [empate, setEmpate] = useState<boolean>(false);
 
     // Definir el id de la sala
+    const refRoom = useRef<HTMLInputElement>(null);
     const [roomId, setRoomId] = useState<string>("");
 
 
@@ -48,15 +49,20 @@ export default function Juego() {
 
 
 
-    // todo: cambiar eln ombre de los juigadores, que el jugador del que sea el turno sea el que pueda clickear
+    // todo: cambiar eln ombre de los juigadores, 
 
     // Salas
     const createRoom = () => {
-        socket.emit("create-room");
+        console.log(nickname)
+        socket.emit("create-room", {nickname:nickname});
     }
 
     const joinRoom = () => {
-        socket.emit("join-room", {roomId:roomId});
+        console.log("hola:",nickname)
+        socket.emit("join-room", {
+            roomId:roomId,
+            nickname:nickname,
+        });
     };
 
     // Partida
@@ -68,10 +74,7 @@ export default function Juego() {
         socket.emit("make-move", { index: index });
     };
 
-    // Jugadores
-    useEffect(()=>{
-        socket.emit("set-nickname", nickname);
-    },[nickname])
+
 
     useEffect(() => {
 
@@ -83,9 +86,10 @@ export default function Juego() {
             setPlayer2(data.player2);
         })
 
-        socket.on("room-created", (roomId) => {
-            setRoomId(roomId);
-            socket.emit("join-room", {roomId:roomId});
+        socket.on("room-created", (data) => {
+            setNickname(data.nickname);
+            setRoomId(data.roomId);
+            socket.emit("join-room", {roomId:data.roomId, nickname:data.nickname});
         });
         
 
@@ -96,15 +100,15 @@ export default function Juego() {
 
         socket.on("game-started", (data) => {
             setJuego(true);
-            console.log(data);
             setTurno(data.turno);
             setArray(data.arrayPartida);
             setarrayRenderized(data.arrayPartida);
+            setPlayer1(data.player1);
+            setPlayer2(data.player2);
         });
 
         socket.on("move-made", (data) => {
-            console.log(data)
-            console.log(data.arrayPartida);
+
             setArray(data.arrayPartida);
             setTurno(data.turno);
         });
@@ -157,9 +161,9 @@ export default function Juego() {
 
             {juegoIniciado ? (
                 <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                    <Turno signo={circle} jugadorNombre={player1} seleccionado={turno} jugador="P1"></Turno>
+                    <Turno signo={circle} jugadorNombre={player1} seleccionado={turno} jugador={player1}></Turno>
                     <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
-                    <Turno signo={cross} jugadorNombre={player2} seleccionado={turno} jugador="P2"></Turno>
+                    <Turno signo={cross} jugadorNombre={player2} seleccionado={turno} jugador={player2}></Turno>
                 </div>
             ) : (
                 <div className="flex flex-col gap-3 p-4  justify-center items-center">
@@ -187,6 +191,7 @@ export default function Juego() {
                         <span className="flex flex-col gap-1 text-xs justify-center items-center">
                             <input className="bg-slate-700 rounded-sm p-2" type="text" placeholder="Tu Nickname" ref={refNickname} />
                             <button className="cursor-pointer bg-[#123458]  p-2 rounded-xl hover:animate-none hover:scale-105  " onClick={()=>{setNickname(refNickname.current!.value) }}>Aceptar</button>
+                            <p>{nickname}</p>
                         </span>
             
                     </span>
@@ -194,8 +199,8 @@ export default function Juego() {
                     <span className="flex flex-col gap-3 border  justify-center items-center text-[#D4C9BE] border-[#D4C9BE] p-2 rounded-sm text-md  font-semibold absolute bottom-10 left-80">
                         <p>Ingresa la Sala</p>
                         <span className="flex flex-col gap-1 text-xs justify-center items-center">
-                            <input className="bg-slate-700 rounded-sm p-2" type="text" placeholder="Tu Nickname" ref={refNickname} />
-                            <button className="cursor-pointer bg-[#123458]  p-2 rounded-xl hover:animate-none hover:scale-105  " onClick={()=>{setRoomId(refNickname.current!.value) }}>Aceptar</button>
+                            <input className="bg-slate-700 rounded-sm p-2" type="text" placeholder="Codigo de sala" ref={refRoom} />
+                            <button className="cursor-pointer bg-[#123458]  p-2 rounded-xl hover:animate-none hover:scale-105  " onClick={()=>{setRoomId(refRoom.current!.value) }}>Aceptar</button>
                         </span>
             
                     </span>
