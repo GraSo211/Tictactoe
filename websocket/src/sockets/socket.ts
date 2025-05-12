@@ -2,16 +2,22 @@ import { turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciar
 
 export default function (io) {
     const rooms = {};
+    const players = {P1:"", P2:""};
 
     io.on("connection", (socket) => {
         // Logica de Salas
         
-        socket.on("create-room", () => {
+        socket.on("create-room", (data) => {
             const roomId = crypto.randomUUID();
-            socket.emit("room-created", roomId);
+            socket.emit("room-created", {
+                roomId: roomId,
+                nickname: data.nickname,
+            });
         });
 
         socket.on("join-room", (data) => {
+            console.log("nombre:", data.nickname);
+            console.log("La sala es: ",data.roomId);
             const roomId = data.roomId;
             const room = rooms[roomId] || {};
 
@@ -22,48 +28,42 @@ export default function (io) {
 
             socket.join(roomId);
             socket.data.roomId = roomId;
+            
             // Asignar roles
             if (!room.P1) {
                 room.P1 = socket.id;
+                players.P1 = data.nickname;
+
                 socket.emit("role-assigned", "P1");
             } else if (!room.P2) {
                 room.P2 = socket.id;
+                players.P2 = data.nickname;
                 socket.emit("role-assigned", "P2");
 
+                console.log(players)
+                
                 // Iniciar el juego cuando ambos jugadores están presentes
                 console.log("\n\n Veamos el juego: ", room, "\n\n");
+                
                 io.to(roomId).emit("game-started", {
-                    turno: room.P1,
-                    jugadores: room,
+                    turno: players.P1,
+                    player1: players.P1,
+                    player2: players.P2,
                     arrayPartida: arrayPartida,
                 });
 
-                socket.emit("game-players", {
-                    player1: rooms[roomId].P1,
-                    player2: rooms[roomId].P2,
-                });
+                
             } else {
                 return;
                 }
-                // xd
             // Unir al socket a la sala y actualizar la información de la sala
 
             rooms[roomId] = room;
             console.log(rooms);
         });
 
-        // Logica de Jugadores
+    
 
-        socket.on("set-nickname", (nickname) => {
-            const roomId = socket.data.roomId;
-            if (rooms[roomId]) {
-                if (rooms[roomId].P1 === socket.id) {
-                    rooms[roomId].P1 = nickname;
-                } else if (rooms[roomId].P2 === socket.id) {
-                    rooms[roomId].P2 = nickname;
-                }
-            }
-        });
 
         // Logica de Juego
         socket.on("start-game", (data) => {
@@ -86,6 +86,8 @@ export default function (io) {
             });
         });
 
+
+        // todo: cambiar los nombres de los turnos porque ahora son los jugadores.
         socket.on("make-move", (data) => {
             const roomId = socket.data.roomId;
             const p1 = rooms[roomId].P1;
