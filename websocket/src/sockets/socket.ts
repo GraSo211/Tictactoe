@@ -44,8 +44,8 @@ export default function (io) {
                 });
             } else {
                 return;
-            }
-
+                }
+                // xd
             // Unir al socket a la sala y actualizar la información de la sala
 
             rooms[roomId] = room;
