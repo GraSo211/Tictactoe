@@ -68,6 +68,12 @@ const checkearEmpate = (array: Number[]) => {
 
 // * Funcion para marcar la casilla seleccionada.
 function marcarCasilla(celda: number) {
+
+
+    console.log("\n\n\n\nESTAMOS EN MARCAR CASILLA EL TURNO ES DE ",turno, "\n\n\n\n" )
+
+
+
     // obtenemos de quien es el turnoa actual.
     const turnoJugador: Jugadores = turno;
 
@@ -85,6 +91,9 @@ function marcarCasilla(celda: number) {
         arrayPartida[celda] = "0";
         setTurno("P1");
     }
+
+
+    console.log("\n\n\n\nCAMBIO EL TURNO  AHORA ES DE ",turno, "\n\n\n\n" )
 
     // Se checkea victoria y empate.
     const hayGanador: boolean = checkVictoria(arrayPartida, turnoJugador);

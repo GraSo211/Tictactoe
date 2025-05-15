@@ -2,11 +2,11 @@ import { turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciar
 
 export default function (io) {
     const rooms = {};
-    const players = {P1:"", P2:""};
+    const players = { P1: "", P2: "" };
 
     io.on("connection", (socket) => {
         // Logica de Salas
-        
+
         socket.on("create-room", (data) => {
             const roomId = crypto.randomUUID();
             socket.emit("room-created", {
@@ -17,7 +17,7 @@ export default function (io) {
 
         socket.on("join-room", (data) => {
             console.log("nombre:", data.nickname);
-            console.log("La sala es: ",data.roomId);
+            console.log("La sala es: ", data.roomId);
             const roomId = data.roomId;
             const room = rooms[roomId] || {};
 
@@ -28,7 +28,7 @@ export default function (io) {
 
             socket.join(roomId);
             socket.data.roomId = roomId;
-            
+
             // Asignar roles
             if (!room.P1) {
                 room.P1 = socket.id;
@@ -40,38 +40,35 @@ export default function (io) {
                 players.P2 = data.nickname;
                 socket.emit("role-assigned", "P2");
 
-                console.log(players)
-                
+                console.log(players);
+
                 // Iniciar el juego cuando ambos jugadores están presentes
                 console.log("\n\n Veamos el juego: ", room, "\n\n");
-                
+
                 io.to(roomId).emit("game-started", {
                     turno: players.P1,
                     player1: players.P1,
                     player2: players.P2,
                     arrayPartida: arrayPartida,
                 });
-
-                
             } else {
                 return;
-                }
+            }
             // Unir al socket a la sala y actualizar la información de la sala
 
             rooms[roomId] = room;
             console.log(rooms);
         });
 
-    
-
-
         // Logica de Juego
         socket.on("start-game", (data) => {
             const roomId = socket.data.roomId;
-
+            console.log("EN EL START GAME", players.P1);
             io.to(roomId).emit("game-started", {
-                turno: turno,
+                turno: players.P1,
                 arrayPartida: arrayPartida,
+                player1: players.P1,
+                player2: players.P2,
             });
         });
 
@@ -79,24 +76,25 @@ export default function (io) {
             const roomId = socket.data.roomId;
             reiniciarPartida();
             io.to(roomId).emit("game-restarted", {
-                turno: turno,
+                turno: players.P1,
                 arrayPartida: arrayPartida,
                 partida: partida,
                 empate: empate,
             });
         });
 
-
-        // todo: cambiar los nombres de los turnos porque ahora son los jugadores.
+        
         socket.on("make-move", (data) => {
             const roomId = socket.data.roomId;
             const p1 = rooms[roomId].P1;
             const p2 = rooms[roomId].P2;
-            if (turno === "P1" && p1 != socket.id) return;
-            if (turno === "P2" && p2 != socket.id) return;
+            if (turno === "P1" && socket.id !== p1) return;
+            if (turno === "P2" && socket.id !== p2) return;
 
             marcarCasilla(data.index);
-            io.to(roomId).emit("move-made", { arrayPartida: arrayPartida, turno: turno });
+
+            const jugadorTurno = turno === "P1" ? players.P1 : players.P2;
+            io.to(roomId).emit("move-made", { arrayPartida: arrayPartida, turno: turno, jugadorTurno: jugadorTurno });
 
             if (partida) {
                 io.to(roomId).emit("game-won", {
