@@ -49,8 +49,6 @@ export default function Juego() {
 
 
 
-    // todo: cambiar eln ombre de los juigadores, 
-
     // Salas
     const createRoom = () => {
         console.log(nickname)
@@ -77,8 +75,6 @@ export default function Juego() {
 
 
     useEffect(() => {
-
-    
 
 
         socket.on("game-players",(data)=>{
@@ -110,7 +106,7 @@ export default function Juego() {
         socket.on("move-made", (data) => {
 
             setArray(data.arrayPartida);
-            setTurno(data.turno);
+            setTurno(data.jugadorTurno);
         });
 
         socket.on("game-won", (data) => {
@@ -161,11 +157,11 @@ export default function Juego() {
 
             {juegoIniciado ? (
                 <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                    <Turno signo={circle} jugadorNombre={player1} seleccionado={turno} jugador={player1}></Turno>
+                    <Turno signo={circle} jugadorNombre={player1} seleccionado={turno} ></Turno>
                     <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
-                    <Turno signo={cross} jugadorNombre={player2} seleccionado={turno} jugador={player2}></Turno>
+                    <Turno signo={cross} jugadorNombre={player2} seleccionado={turno} ></Turno>
                 </div>
-            ) : (
+            ) : (   
                 <div className="flex flex-col gap-3 p-4  justify-center items-center">
                     <button
                         className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
