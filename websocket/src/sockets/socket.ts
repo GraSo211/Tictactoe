@@ -97,8 +97,10 @@ export default function (io) {
             io.to(roomId).emit("move-made", { arrayPartida: arrayPartida, turno: turno, jugadorTurno: jugadorTurno });
 
             if (partida) {
+                const winner =  ganador === "P1"? players.P1 : players.P2; 
+
                 io.to(roomId).emit("game-won", {
-                    ganador: jugadorTurno,
+                    ganador: winner ,
                     partida: partida,
                 });
             }
