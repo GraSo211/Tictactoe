@@ -1,4 +1,4 @@
-import { turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciarPartida } from "../services/game.ts";
+import { turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciarPartida } from "../services/game.js";
 
 export default function (io) {
     const rooms = {};

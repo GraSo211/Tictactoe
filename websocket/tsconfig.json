@@ -6,8 +6,8 @@
         "outDir": "dist",
         "esModuleInterop": true, // Necesario para Express
         "sourceMap": true,
-        "allowImportingTsExtensions": true,
-        "noEmit": true
+        "allowImportingTsExtensions": false,
+        "noEmit": false
     },
     "include": ["src/**/*",]
 }
