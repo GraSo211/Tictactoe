@@ -98,7 +98,7 @@ export default function (io) {
 
             if (partida) {
                 io.to(roomId).emit("game-won", {
-                    ganador: ganador,
+                    ganador: jugadorTurno,
                     partida: partida,
                 });
             }
