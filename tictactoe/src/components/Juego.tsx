@@ -5,24 +5,15 @@ import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
 
 import socket from "../socket.js";
-import { ThreeDots } from "react-loading-icons";
-import Audio from "react-loading-icons/dist/esm/components/audio";
 import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle";
-import Bars from "react-loading-icons/dist/esm/components/bars";
-import Circles from "react-loading-icons/dist/esm/components/circles";
-import Grid from "react-loading-icons/dist/esm/components/grid";
-import Hearts from "react-loading-icons/dist/esm/components/hearts";
-import Oval from "react-loading-icons/dist/esm/components/oval";
-import Puff from "react-loading-icons/dist/esm/components/puff";
-import Rings from "react-loading-icons/dist/esm/components/rings";
-import SpinningCircles from "react-loading-icons/dist/esm/components/spinning-circles";
-import TailSpin from "react-loading-icons/dist/esm/components/tail-spin";
 
 /* 
     todo: 1 - CUANDO INGRESA UNA SALA Y NO EXISTE LO INFORMAMOS Y NO DEBERIAMOS CREARLA, PARA ESO DEBERIA EL CREAR UNA SALA.
     todo: 2 - JUGAR CONTRA LA IA.
     todo: 3 - SALA DE ESPERA, MIENTRAS SE UNE EL OTRO JUGADOR.
-    todo: 4 - 
+    todo: 5 - REINGRESAR A SALA
+    todo: 6 - ELIMINAR SALAS NO UTILIZADAS
+    todo: 7 - 
     
 
 */
@@ -80,7 +71,7 @@ export default function Juego() {
     const joinRoom = () => {
         setVentanaUnirse(true);
 
-        /*   */
+        
     };
 
     // Partida
@@ -178,7 +169,8 @@ export default function Juego() {
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3 p-4  justify-center items-center">
-                        <h2 className="absolute top-2 left-5 z-0 text-white font-semibold text-2xl">{nickname}</h2>
+                        <h2 className="absolute top-2 left-5 z-0 text-[#D4C9BE] font-semibold text-2xl">{nickname}</h2>
+                        <button className={"absolute  top-10 left-5 text-[10px]  hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"} onClick={()=>{setNickname("")}}>Cambiar Nickname</button>
                         <button
                             className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
                             onClick={() => setJuego(true)}
@@ -206,7 +198,7 @@ export default function Juego() {
                                     <p className="text-3xl font-bold text-[#D4C9BE]">Ingresa a la Sala</p>
 
                                     <input
-                                        className="bg-slate-800 text-white placeholder-gray-400 rounded-lg w-full py-3 px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner border border-slate-600"
+                                        className="bg-slate-800 text-[#D4C9BE] placeholder-gray-400 rounded-lg w-full py-3 px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner border border-slate-600"
                                         type="text"
                                         placeholder="Código de sala"
                                         ref={refRoom}
@@ -214,7 +206,7 @@ export default function Juego() {
                                     />
 
                                     <button
-                                        className="bg-[#123458] cursor-pointer text-white text-base font-medium w-full py-3 rounded-xl hover:bg-[#145ea8] transition transform hover:scale-105"
+                                        className="bg-[#123458] cursor-pointer text-[#D4C9BE] text-base font-medium w-full py-3 rounded-xl hover:bg-[#145ea8] transition transform hover:scale-105"
                                         onClick={() => {
                                             if (refRoom.current) {
                                                 setRoomId(refRoom.current.value);
@@ -239,7 +231,7 @@ export default function Juego() {
                                     <p className="text-3xl font-bold text-[#D4C9BE]">Creación de Sala</p>
 
                                     <span
-                                        className="bg-slate-800 text-white text-center font-mono tracking-widest rounded-lg w-full py-3 px-4 text-sm shadow-inner border border-slate-600 select-all"
+                                        className="bg-slate-800 text-[#D4C9BE] text-center font-mono tracking-widest rounded-lg w-full py-3 px-4 text-sm shadow-inner border border-slate-600 select-all"
                                         ref={refRoom}
                                         onClick={(e) => e.stopPropagation()}
                                     >
@@ -247,7 +239,7 @@ export default function Juego() {
                                     </span>
 
                                     <button
-                                        className="bg-[#123458] cursor-pointer text-white text-base font-medium w-full py-3 rounded-xl hover:bg-[#145ea8] transition transform hover:scale-105"
+                                        className="bg-[#123458] cursor-pointer text-[#D4C9BE] text-base font-medium w-full py-3 rounded-xl hover:bg-[#145ea8] transition transform hover:scale-105"
                                         onClick={() => {
                                             navigator.clipboard.writeText(roomId);
                                             setMsjCopiadoVisible(true);
@@ -258,12 +250,12 @@ export default function Juego() {
                                     </button>
                                     {msjCopiadoVisible && <span className="text-green-400 text-sm font-semibold animate-fade-in">¡Copiado!</span>}
                                     <div>
-                                        <p className="text-white text-sm text-center">¡Comparte este código con tu amigo!</p>
+                                        <p className="text-[#D4C9BE] text-sm text-center">¡Comparte este código con tu amigo!</p>
                                         <div className="flex gap-3 justify-center items-center">
-                                            <p className="text-white text-sm text-center ">Esperando Jugadores </p>
+                                            <p className="text-[#D4C9BE] text-sm text-center ">Esperando Jugadores </p>
                                             <BallTriangle className="w-6" />
                                         </div>
-                                        <p className="text-white text-sm text-center ">No abandones esta ventana! </p>
+                                        <p className="text-[#D4C9BE] text-sm text-center ">No abandones esta ventana! </p>
                                     </div>
                                 </span>
                             </div>
@@ -271,7 +263,7 @@ export default function Juego() {
                     </div>
                 )
             ) : (
-                <span className="flex flex-col    justify-center items-center text-[rgb(20,20,19)]   text-lg  font-semibold  ">
+                <span className="flex flex-col    justify-center items-center text-[#D4C9BE]  text-lg  font-semibold  ">
                     <p>Ingresa tu Nickname</p>
                     <span className="flex flex-col gap-1 text-xs justify-center w-full items-center">
                         <input className="bg-slate-700 rounded-sm w-full  p-2" type="text" placeholder="Tu Nickname" ref={refNickname} />
