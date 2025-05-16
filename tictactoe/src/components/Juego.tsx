@@ -10,10 +10,9 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
 /* 
     todo: 1 - CUANDO INGRESA UNA SALA Y NO EXISTE LO INFORMAMOS Y NO DEBERIAMOS CREARLA, PARA ESO DEBERIA EL CREAR UNA SALA.
     todo: 2 - JUGAR CONTRA LA IA.
-    todo: 3 - SALA DE ESPERA, MIENTRAS SE UNE EL OTRO JUGADOR.
     todo: 5 - REINGRESAR A SALA
     todo: 6 - ELIMINAR SALAS NO UTILIZADAS
-    todo: 7 - 
+    todo: 7 - ABANDONA PARTIDA
     
 
 */
@@ -146,9 +145,9 @@ export default function Juego() {
     useEffect(() => {
         const newArray = array.map((elem) => {
             if (elem === "1") {
-                return circle;
+                return <RxCircle className="text-blue-500 size-14  xl:size-16" ></RxCircle>;
             } else if (elem === "0") {
-                return cross;
+                return <RxCross2 className="text-red-400 size-14 xl:size-16 " ></RxCross2>;
             } else {
                 return null;
             }
@@ -163,9 +162,9 @@ export default function Juego() {
             {nickname ? (
                 juegoIniciado ? (
                     <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                        <Turno signo={circle} jugadorNombre={player1} seleccionado={turno}></Turno>
-                        <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized}></Tablero>
-                        <Turno signo={cross} jugadorNombre={player2} seleccionado={turno}></Turno>
+                        <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14" ></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
+                        <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
+                        <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14" ></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3 p-4  justify-center items-center">
@@ -284,7 +283,7 @@ export default function Juego() {
                 <div className="absolute top-0 left-0 flex   w-screen h-screen  bg-black/90 ">
                     <div className="relative w-full h-full  text-[#D4C9BE] font-semibold flex flex-col  justify-center items-center ">
                         <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
-                            <h1 className="text-2xl  ">GANO {ganador}</h1>
+                            <h1 className="text-2xl  ">GANÓ {ganador}</h1>
                             <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={reiniciarPartida}>
                                 REINICIAR PARTIDA
                             </button>
