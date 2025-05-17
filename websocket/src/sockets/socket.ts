@@ -7,8 +7,14 @@ export default function (io) {
     io.on("connection", (socket) => {
         // Logica de Salas
 
+        socket.on("remove-room", (roomId)=>{
+            socket.leave(roomId);
+            delete rooms[roomId];
+        })
+
         socket.on("create-room", (data) => {
             const roomId = crypto.randomUUID();
+            rooms[roomId] = {}
             socket.emit("room-created", {
                 roomId: roomId,
                 nickname: data.nickname,
@@ -19,7 +25,18 @@ export default function (io) {
             console.log("nombre:", data.nickname);
             console.log("La sala es: ", data.roomId);
             const roomId = data.roomId;
-            const room = rooms[roomId] || {};
+
+            const room = rooms[roomId];
+            if(room == undefined){
+                console.log("ENTRAMOS ACA PERO SE ASIGNA IGUAL LASALA")
+                socket.emit("room-not-found", {
+                    state: true,
+                    msg : "No se encontro la sala."
+                })
+                return
+            }
+
+            
 
             // Verificar si el socket ya está en la sala
             if (room.P1 === socket.id || room.P2 === socket.id) {
