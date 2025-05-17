@@ -13,6 +13,8 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
     todo: 5 - REINGRESAR A SALA
     todo: 6 - ELIMINAR SALAS NO UTILIZADAS
     todo: 7 - ABANDONA PARTIDA
+    todo: 8 - CAMBIAR ID DEL JUGADOR Y GUARDARLO EN LOCAL STORAGE
+
     
 
 */
@@ -27,6 +29,11 @@ export default function Juego() {
 
     const [player1, setPlayer1] = useState<string>("P1");
     const [player2, setPlayer2] = useState<string>("P2");
+
+
+
+    const [roomNotFound, setRoomNotFound] = useState<boolean>(false);
+
 
     const [turno, setTurno] = useState<string>("P1");
 
@@ -52,13 +59,16 @@ export default function Juego() {
     const refRoom = useRef<HTMLInputElement>(null);
     const [roomId, setRoomId] = useState<string>("");
 
-    // Definir el icono de cada jugador
-    const circle = <RxCircle className="text-blue-500  xl:size-[80px]" size={50}></RxCircle>;
-    const cross = <RxCross2 className="text-red-400 xl:size-[80px]" size={50}></RxCross2>;
+
 
     const updtNickname = (name: string) => {
         setNickname(name);
         localStorage.setItem("nickname", name);
+    };
+
+    const leaveCreateRoom = () => {
+        setVentanaCrear(false);
+        socket.emit("remove-room", roomId);
     };
 
     // Salas
@@ -69,8 +79,6 @@ export default function Juego() {
 
     const joinRoom = () => {
         setVentanaUnirse(true);
-
-        
     };
 
     // Partida
@@ -84,6 +92,13 @@ export default function Juego() {
 
     useEffect(() => {
         if (localStorage.getItem("nickname") !== null) setNickname(localStorage.getItem("nickname")!);
+
+
+        socket.on("room-not-found", (data)=>{
+            setRoomNotFound(data.state);
+            setTimeout(()=>{setRoomNotFound(false)},2000)
+        })
+
 
         socket.on("game-players", (data) => {
             setPlayer1(data.player1);
@@ -145,9 +160,9 @@ export default function Juego() {
     useEffect(() => {
         const newArray = array.map((elem) => {
             if (elem === "1") {
-                return <RxCircle className="text-blue-500 size-14  xl:size-16" ></RxCircle>;
+                return <RxCircle className="text-blue-500 size-14  xl:size-16"></RxCircle>;
             } else if (elem === "0") {
-                return <RxCross2 className="text-red-400 size-14 xl:size-16 " ></RxCross2>;
+                return <RxCross2 className="text-red-400 size-14 xl:size-16 "></RxCross2>;
             } else {
                 return null;
             }
@@ -162,14 +177,23 @@ export default function Juego() {
             {nickname ? (
                 juegoIniciado ? (
                     <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                        <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14" ></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
+                        <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
                         <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
-                        <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14" ></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
+                        <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3 p-4  justify-center items-center">
                         <h2 className="absolute top-2 left-5 z-0 text-[#D4C9BE] font-semibold text-2xl">{nickname}</h2>
-                        <button className={"absolute  top-10 left-5 text-[10px]  hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"} onClick={()=>{setNickname("")}}>Cambiar Nickname</button>
+                        <button
+                            className={
+                                "absolute  top-10 left-5 text-[10px]  hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120 text-[#D4C9BE] font-semibold"
+                            }
+                            onClick={() => {
+                                setNickname("");
+                            }}
+                        >
+                            Cambiar Nickname
+                        </button>
                         <button
                             className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
                             onClick={() => setJuego(true)}
@@ -218,11 +242,12 @@ export default function Juego() {
                                     >
                                         Unirse
                                     </button>
+                                    {roomNotFound && <span className="text-red-400">No se encontro la Sala.</span>}
                                 </span>
                             </div>
                         )}
                         {ventanaCrear && (
-                            <div className="bg-black/60 z-10 backdrop-blur-sm fixed inset-0 flex justify-center items-center" onClick={() => setVentanaCrear(false)}>
+                            <div className="bg-black/60 z-10 backdrop-blur-sm fixed inset-0 flex justify-center items-center" onClick={() => leaveCreateRoom()}>
                                 <span
                                     className="bg-white/10 backdrop-blur-md z-30 px-8 py-10 rounded-2xl shadow-2xl w-full max-w-md flex flex-col items-center gap-6 border border-white/20"
                                     onClick={(e) => e.stopPropagation()}
