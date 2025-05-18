@@ -1,4 +1,4 @@
-import { Game, Player } from "../services/Game.js";
+import { Game, Player } from "../services/game.js";
 import { Rooms } from "./socket.js";
 
 export default function gameHandler(io, socket, rooms: Rooms) {

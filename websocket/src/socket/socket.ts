@@ -1,4 +1,4 @@
-import { Game } from "../services/Game.js";
+import { Game } from "../services/game.js";
 import gameHandler from "./gameHandler.js";
 import roomManager from "./roomManager.js";
 
