@@ -3,17 +3,19 @@ import Tablero from "./Tablero";
 import Turno from "./Turno";
 import { RxCircle } from "react-icons/rx";
 import { RxCross2 } from "react-icons/rx";
-
+import { v4 as uuid } from "uuid";
 import socket from "../socket.js";
 import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle";
 
 /* 
-    todo: 1 - CUANDO INGRESA UNA SALA Y NO EXISTE LO INFORMAMOS Y NO DEBERIAMOS CREARLA, PARA ESO DEBERIA EL CREAR UNA SALA.
     todo: 2 - JUGAR CONTRA LA IA.
     todo: 5 - REINGRESAR A SALA
     todo: 6 - ELIMINAR SALAS NO UTILIZADAS
     todo: 7 - ABANDONA PARTIDA
     todo: 8 - CAMBIAR ID DEL JUGADOR Y GUARDARLO EN LOCAL STORAGE
+    todo: 9 - CAMBIAR EL ORDEN DE ARRANQUE ENTRE PARTIDAS
+    todo: 10 - CAMBIAR EL REINICIAR PARTIDA
+
 
     
 
@@ -30,10 +32,9 @@ export default function Juego() {
     const [player1, setPlayer1] = useState<string>("P1");
     const [player2, setPlayer2] = useState<string>("P2");
 
-
+    const [userId, setUserId] = useState<string>("");
 
     const [roomNotFound, setRoomNotFound] = useState<boolean>(false);
-
 
     const [turno, setTurno] = useState<string>("P1");
 
@@ -59,8 +60,6 @@ export default function Juego() {
     const refRoom = useRef<HTMLInputElement>(null);
     const [roomId, setRoomId] = useState<string>("");
 
-
-
     const updtNickname = (name: string) => {
         setNickname(name);
         localStorage.setItem("nickname", name);
@@ -69,11 +68,12 @@ export default function Juego() {
     const leaveCreateRoom = () => {
         setVentanaCrear(false);
         socket.emit("remove-room", roomId);
+        localStorage.removeItem("roomId")
     };
 
     // Salas
     const createRoom = () => {
-        socket.emit("create-room", { nickname: nickname });
+        socket.emit("create-room", { nickname: nickname, userId: userId });
         setVentanaCrear(true);
     };
 
@@ -87,18 +87,42 @@ export default function Juego() {
     };
 
     const marcarCasilla = (index: number) => {
-        socket.emit("make-move", { index: index });
+        socket.emit("make-move", { index: index, userId: userId });
     };
 
     useEffect(() => {
         if (localStorage.getItem("nickname") !== null) setNickname(localStorage.getItem("nickname")!);
+        if (localStorage.getItem("roomId") !== null) setRoomId(localStorage.getItem("roomId")!);
+
+        if (localStorage.getItem("userId") !== null) {
+            setUserId(localStorage.getItem("userId")!);
+        } else {
+            const id = uuid();
+            localStorage.setItem("userId", id);
+            setUserId(id);
+        }
 
 
-        socket.on("room-not-found", (data)=>{
-            setRoomNotFound(data.state);
-            setTimeout(()=>{setRoomNotFound(false)},2000)
+        socket.on("connect", ()=>{
+            console.log("RECARGAMOS")
+            if(roomId && userId){
+                socket.emit("rejoin-room", { roomId: roomId, userId: userId });
+            }
         })
 
+
+        socket.on("game-state",(data)=>{
+            setArray(data.arrayPartida)
+            setTurno(data.jugadorTurno)
+            
+        })
+
+        socket.on("room-not-found", (data) => {
+            setRoomNotFound(data.state);
+            setTimeout(() => {
+                setRoomNotFound(false);
+            }, 2000);
+        });
 
         socket.on("game-players", (data) => {
             setPlayer1(data.player1);
@@ -108,14 +132,16 @@ export default function Juego() {
         socket.on("room-created", (data) => {
             setNickname(data.nickname);
             setRoomId(data.roomId);
-            socket.emit("join-room", { roomId: data.roomId, nickname: data.nickname });
+            localStorage.setItem("roomId",data.roomId)
+            setUserId(data.userId);
+            socket.emit("join-room", { roomId: data.roomId, nickname: data.nickname, userId: data.userId });
         });
 
         socket.on("room-joined", (message) => {
             console.log(message);
         });
 
-        socket.on("game-started", (data) => {
+        socket.on("start-game", (data) => {
             setJuego(true);
             setTurno(data.turno);
             setArray(data.arrayPartida);
@@ -147,13 +173,15 @@ export default function Juego() {
         });
 
         return () => {
+            socket.off("room-not-found");
+            socket.off("game-players");
+            socket.off("room-created");
             socket.off("room-joined");
-            socket.off("game-started");
+            socket.off("start-game");
             socket.off("move-made");
             socket.off("game-won");
             socket.off("game-restarted");
             socket.off("game-finished");
-            socket.off;
         };
     }, []);
 
@@ -233,9 +261,11 @@ export default function Juego() {
                                         onClick={() => {
                                             if (refRoom.current) {
                                                 setRoomId(refRoom.current.value);
+                                                localStorage.setItem("roomId", refRoom.current.value);
                                                 socket.emit("join-room", {
                                                     roomId: refRoom.current.value,
                                                     nickname: nickname,
+                                                    userId: userId,
                                                 });
                                             }
                                         }}
@@ -308,7 +338,7 @@ export default function Juego() {
                 <div className="absolute top-0 left-0 flex   w-screen h-screen  bg-black/90 ">
                     <div className="relative w-full h-full  text-[#D4C9BE] font-semibold flex flex-col  justify-center items-center ">
                         <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
-                            <h1 className="text-2xl  ">GANÓ {ganador}</h1>
+                            <h1 className="text-2xl  ">GANÓ {ganador}!</h1>
                             <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={reiniciarPartida}>
                                 REINICIAR PARTIDA
                             </button>
