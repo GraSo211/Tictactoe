@@ -1,37 +1,16 @@
-// * Funcion para checkear si algun jugador gano. Checked
-
-type Jugadores = string;
-
-
-let turno: Jugadores = "P1";
-const setTurno = (jugador: Jugadores) => {
-    turno = jugador;
+export enum Player {
+    P1 = "P1",
+    P2 = "P2"
 }
 
-let partida = false;
-const setPartida = (estado:boolean)=>{
-    partida = estado;
+enum GameStatus {
+    NOT_STARTED = 0,
+    IN_PROGRESS = "EN JUEGO",
+    FINISHED = 1
 }
-
-
-let ganador: Jugadores|"" = "";
-const setGanador = (jugador:Jugadores)=>{
-    ganador = jugador;
-}
-
-
-
-let empate = false;
-const setEmpate = (estado:boolean)=>{
-    empate = estado;
-}
-
-
-let arrayPartida = Array(9).fill(null);
-
 
 // Posibles combinaciones de victoria
-const victoria = [
+const WIN = [
     [0, 1, 2],
     [3, 4, 5],
     [6, 7, 8],
@@ -42,72 +21,115 @@ const victoria = [
     [2, 5, 8],
 ];
 
-const checkVictoria = (array: Number[], turno: Jugadores) => {
-    for (const arrayGanador of victoria) {
-        const [a, b, c] = arrayGanador;
-        if (array[a] && array[a] === array[b] && array[a] === array[c]) {
-            setPartida(true);
-            const jugador = turno;
-            setGanador(jugador);
-            return true;
-            
-        }
-    }
-    return false;
-};
 
-// * Se checkea si hay empate. Checked
-const checkearEmpate = (array: Number[]) => {
-    for (const elem of array) {
-        if (elem === null) {
+
+export class Game {
+    id:string
+    // Estado FALSE: NO INICIADO, EN JUEGO: EN JUEGO, TRUE: FINALIZADO
+    gameStatus: GameStatus = GameStatus.NOT_STARTED;
+    // Ganador
+    winner: Player;
+    // Tablero
+    board = Array(9).fill(null);
+    // Turno
+    turn: Player = Player.P1;
+    // Empate
+    draw: boolean;
+
+    firstTurn: Player
+
+    // CONSTRUCTOR
+    constructor(turn:Player) {
+        this.id = crypto.randomUUID();
+        this.gameStatus = GameStatus.IN_PROGRESS;
+        this.turn = turn
+        this.firstTurn = turn
+    }
+
+    public getFirstTurn(){
+        return this.firstTurn;
+    }
+
+    public getWinner(){
+        return this.winner;
+    }
+
+    public getTurn(){
+        return this.turn;
+    }
+
+    public getBoard(){
+        return this.board;
+    }
+
+    public getGameStatus(){
+        return this.gameStatus;
+
+    }
+
+    public getDraw(){
+        return this.draw;
+    }
+
+    private setTurn(turn: Player) {
+        this.turn = turn;
+    }
+
+    private setBoard(index: number, value: string) {
+        this.board[index] = value;
+    }
+
+    private setGameStatus(status: GameStatus) {
+        this.gameStatus = status;
+    }
+
+    private setWinner(player: Player) {
+        this.winner = player;
+    }
+
+    private setDraw(draw:boolean){
+        this.draw = draw;
+    }
+
+    public makeMove(cell: number) {
+        // Si el jugador toco una celda ya ocupada, no se hace nada.
+        if (this.board[cell] != null) {
             return;
         }
-    }
-    setEmpate(true);
-};
+        const currentPlayer = this.turn;
+        // En el turno del jugador 1, se pone un 1 a su celda marcada y se cambia el turno al jugador 2. Para el jugador 2 se hace lo mismo pero con un 0.
+        if (this.turn === Player.P1) {
+            this.setBoard(cell, "1");
 
-// * Funcion para marcar la casilla seleccionada.
-function marcarCasilla(celda: number) {
+            this.setTurn(Player.P2);
+        } else {
+            this.setBoard(cell, "0");
+            this.setTurn(Player.P1);
+        }
 
-
-    console.log("\n\n\n\nESTAMOS EN MARCAR CASILLA EL TURNO ES DE ",turno, "\n\n\n\n" )
-
-
-
-    // obtenemos de quien es el turnoa actual.
-    const turnoJugador: Jugadores = turno;
-
-    // Si el jugador toco una celda ya ocupada, no se hace nada.
-    if (arrayPartida[celda] != null) {
-        return;
+        // Se checkea victoria y empate.
+        this.checkWinner(currentPlayer);
+        this.checkDraw();
     }
 
-
-    // En el turno del jugador 1, se coloca el svg en el array renderized, se pone un 1 a su celda marcada y se cambia el turno al jugador 2. Para el jugador 2 se hace lo mismo pero con un 0.
-    if (turno === "P1") {
-        arrayPartida[celda] = "1";
-        setTurno("P2");
-    } else {
-        arrayPartida[celda] = "0";
-        setTurno("P1");
+    private checkWinner(turn: Player) {
+        for (const combination of WIN) {
+            const [a, b, c] = combination;
+            if (this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) {
+                this.setGameStatus(GameStatus.FINISHED);
+                this.setWinner(turn);
+            }
+        }
     }
 
-
-    console.log("\n\n\n\nCAMBIO EL TURNO  AHORA ES DE ",turno, "\n\n\n\n" )
-
-    // Se checkea victoria y empate.
-    const hayGanador: boolean = checkVictoria(arrayPartida, turnoJugador);
-    if (!hayGanador) {
-        checkearEmpate(arrayPartida);
+    private checkDraw() {
+        if (this.gameStatus === GameStatus.FINISHED) return;
+        for (const cell of this.board) {
+            if (cell === null) {
+                return;
+            }
+        }
+        this.setDraw(true);
+        this.setGameStatus(GameStatus.FINISHED);
     }
 }
-
-// * Funcion para reiniciar el juego. Checked
-function reiniciarPartida() {
-    setTurno("P1");
-    arrayPartida = Array(9).fill(null);
-    setPartida(false);
-    setEmpate(false);
-}
-
-export {turno, partida, ganador, empate, arrayPartida, marcarCasilla, reiniciarPartida};

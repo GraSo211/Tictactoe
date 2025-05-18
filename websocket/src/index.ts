@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import { createServer } from 'node:http';
-import socket from './sockets/socket.js';
+import socket from './socket/socket.js';
 
 const port = process.env.PORT || 3000;
 
