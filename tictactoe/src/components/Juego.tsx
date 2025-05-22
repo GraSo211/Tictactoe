@@ -11,11 +11,10 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
     todo: 2 - JUGAR CONTRA LA IA.
     todo: 5 - REINGRESAR A SALA
     todo: 6 - ELIMINAR SALAS NO UTILIZADAS
-    todo: 7 - ABANDONA PARTIDA
-    todo: 8 - CAMBIAR ID DEL JUGADOR Y GUARDARLO EN LOCAL STORAGE
-    todo: 9 - CAMBIAR EL ORDEN DE ARRANQUE ENTRE PARTIDAS
-    todo: 10 - CAMBIAR EL REINICIAR PARTIDA
-
+    todo: 7 - ABANDONAR PARTIDA
+    todo: 10 - CAMBIAR EL REINICIAR PARTIDA PARA QUE UNO LE DE REINICIAR Y ELOTRO DEBA CONFIRMAR
+    todo: 11 - CONTAR LAS WINS
+    todo: 12 - 
 
     
 
@@ -65,6 +64,16 @@ export default function Juego() {
         localStorage.setItem("nickname", name);
     };
 
+
+    const leaveRoom = ()=>{
+        socket.emit("leave-room", { roomId: roomId, userId: userId });
+        setJuego(false);
+        setVentanaCrear(false);
+        setVentanaUnirse(false);
+        setRoomId("");
+        localStorage.removeItem("roomId");
+    }
+
     const leaveCreateRoom = () => {
         setVentanaCrear(false);
         socket.emit("remove-room", roomId);
@@ -102,6 +111,9 @@ export default function Juego() {
             setUserId(id);
         }
 
+        socket.on("room-left", () => {
+            leaveRoom();
+        });
 
         socket.on("connect", ()=>{
             console.log("RECARGAMOS")
@@ -208,6 +220,7 @@ export default function Juego() {
                         <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
                         <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
                         <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
+                        <button className="text-[#D4C9BE] text-xl absolute bottom-5 right-10 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={()=>{leaveRoom()}}>Abandonar</button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3 p-4  justify-center items-center">
