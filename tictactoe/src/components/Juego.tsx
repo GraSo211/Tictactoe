@@ -10,11 +10,8 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
 /* 
     todo: 2 - JUGAR CONTRA LA IA.
     todo: 5 - REINGRESAR A SALA
-    todo: 6 - ELIMINAR SALAS NO UTILIZADAS
-    todo: 7 - ABANDONAR PARTIDA
     todo: 10 - CAMBIAR EL REINICIAR PARTIDA PARA QUE UNO LE DE REINICIAR Y ELOTRO DEBA CONFIRMAR
     todo: 11 - CONTAR LAS WINS
-    todo: 12 - 
 
     
 
@@ -34,6 +31,8 @@ export default function Juego() {
     const [userId, setUserId] = useState<string>("");
 
     const [roomNotFound, setRoomNotFound] = useState<boolean>(false);
+
+    const [playerLeft, setPlayerLeft] = useState<boolean>(false);
 
     const [turno, setTurno] = useState<string>("P1");
 
@@ -64,20 +63,23 @@ export default function Juego() {
         localStorage.setItem("nickname", name);
     };
 
-
-    const leaveRoom = ()=>{
+    const leaveRoom = () => {
         socket.emit("leave-room", { roomId: roomId, userId: userId });
+        cleanupAfterLeave();
+    };
+
+    const cleanupAfterLeave = () => {
         setJuego(false);
         setVentanaCrear(false);
         setVentanaUnirse(false);
         setRoomId("");
         localStorage.removeItem("roomId");
-    }
+    };
 
     const leaveCreateRoom = () => {
         setVentanaCrear(false);
         socket.emit("remove-room", roomId);
-        localStorage.removeItem("roomId")
+        localStorage.removeItem("roomId");
     };
 
     // Salas
@@ -112,22 +114,19 @@ export default function Juego() {
         }
 
         socket.on("room-left", () => {
-            leaveRoom();
+            setPlayerLeft(true);
         });
 
-        socket.on("connect", ()=>{
-            console.log("RECARGAMOS")
-            if(roomId && userId){
+        socket.on("connect", () => {
+            if (roomId && userId) {
                 socket.emit("rejoin-room", { roomId: roomId, userId: userId });
             }
-        })
+        });
 
-
-        socket.on("game-state",(data)=>{
-            setArray(data.arrayPartida)
-            setTurno(data.jugadorTurno)
-            
-        })
+        socket.on("game-state", (data) => {
+            setArray(data.arrayPartida);
+            setTurno(data.jugadorTurno);
+        });
 
         socket.on("room-not-found", (data) => {
             setRoomNotFound(data.state);
@@ -144,7 +143,7 @@ export default function Juego() {
         socket.on("room-created", (data) => {
             setNickname(data.nickname);
             setRoomId(data.roomId);
-            localStorage.setItem("roomId",data.roomId)
+            localStorage.setItem("roomId", data.roomId);
             setUserId(data.userId);
             socket.emit("join-room", { roomId: data.roomId, nickname: data.nickname, userId: data.userId });
         });
@@ -220,7 +219,28 @@ export default function Juego() {
                         <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
                         <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
                         <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
-                        <button className="text-[#D4C9BE] text-xl absolute bottom-5 right-10 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={()=>{leaveRoom()}}>Abandonar</button>
+                        {playerLeft && (
+                            <div className="text-white absolute bg-black/80 w-full flex h-full top-0 left-0 justify-center flex-col gap-2 items-center z-20">
+                                <span className="font-semibold text-2xl">El otro jugador abandono la sala</span>
+                                <button
+                                    className="text-[#D4C9BE] text-xl  font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse "
+                                    onClick={() => {
+                                        leaveRoom();
+                                        setPlayerLeft(false);
+                                    }}
+                                >
+                                    Volver
+                                </button>
+                            </div>
+                        )}
+                        <button
+                            className="text-[#D4C9BE] text-xl absolute bottom-5 right-10 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse "
+                            onClick={() => {
+                                leaveRoom();
+                            }}
+                        >
+                            Abandonar
+                        </button>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3 p-4  justify-center items-center">
