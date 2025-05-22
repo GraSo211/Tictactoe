@@ -21,6 +21,25 @@ export default function roomManager(io, socket, rooms: Rooms) {
     });
  */
 
+
+    socket.on("leave-room", (data) => {
+        const roomId = data.roomId;
+        const userId = data.userId;
+        if(rooms.get(roomId).players.P1 === undefined){
+            if(rooms.get(roomId).players.P1.id === userId){
+                delete rooms.get(roomId).players.P1;
+            }
+        }
+        if(rooms.get(roomId).players.P2 === undefined){
+            if(rooms.get(roomId).players.P2.id === userId){
+                delete rooms.get(roomId).players.P2;
+            }
+        }
+
+        socket.leave(roomId);
+        io.to(roomId).emit("room-left")
+    });
+
     socket.on("create-room", (data) => {
         const roomId = crypto.randomUUID();
         rooms.set(roomId, {
