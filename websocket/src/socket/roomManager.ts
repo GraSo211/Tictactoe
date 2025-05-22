@@ -21,23 +21,26 @@ export default function roomManager(io, socket, rooms: Rooms) {
     });
  */
 
-
     socket.on("leave-room", (data) => {
         const roomId = data.roomId;
         const userId = data.userId;
-        if(rooms.get(roomId).players.P1 === undefined){
-            if(rooms.get(roomId).players.P1.id === userId){
-                delete rooms.get(roomId).players.P1;
-            }
+
+        const room = rooms.get(roomId);
+
+        if (!room) return;
+
+        const { P1, P2 } = room.players;
+
+        if (P1 && P1.id === userId) {
+            delete room.players.P1;
         }
-        if(rooms.get(roomId).players.P2 === undefined){
-            if(rooms.get(roomId).players.P2.id === userId){
-                delete rooms.get(roomId).players.P2;
-            }
+
+        if (P2 && P2.id === userId) {
+            delete room.players.P2;
         }
 
         socket.leave(roomId);
-        io.to(roomId).emit("room-left")
+        io.to(roomId).emit("room-left");
     });
 
     socket.on("create-room", (data) => {
@@ -45,8 +48,8 @@ export default function roomManager(io, socket, rooms: Rooms) {
         rooms.set(roomId, {
             game: null,
             players: {
-                P1: {id:null, name:null},
-                P2: {id:null,name:null},
+                P1: { id: null, name: null },
+                P2: { id: null, name: null },
             },
         });
 
