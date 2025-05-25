@@ -3,45 +3,16 @@ import { Rooms } from "./socket.js";
 
 export default function gameHandler(io, socket, rooms: Rooms) {
     // Logica de Juego
-    /*     socket.on("start-game", (data) => {
-        const roomId = socket.data.roomId;
-        console.log("EN EL START GAME", players.P1);
-        io.to(roomId).emit("game-started", {
-            turno: players.P1,
-            arrayPartida: arrayPartida,
-            player1: players.P1,
-            player2: players.P2,
-        });
-    }); */
-
-    socket.on("restart-game", () => {
-        const roomId = socket.data.roomId;
-        let newTurn;
-        let player;
-        if (rooms.get(roomId).game.getFirstTurn() === Player.P1) {
-            newTurn = Player.P2;
-            player = rooms.get(roomId).players.P2.name;
-        } else {
-            newTurn = Player.P1;
-            player = rooms.get(roomId).players.P1.name;
-        }
-
-        const newGame = new Game(newTurn);
-        rooms.get(roomId).game = newGame;
-        io.to(roomId).emit("game-restarted", {
-            turno: player,
-            arrayPartida: newGame.getBoard(),
-            partida: false,
-            empate: newGame.getDraw(),
-        });
-    });
 
     socket.on("make-move", (data) => {
         const roomId = socket.data.roomId;
-        //console.log("Rooms:", rooms.get(roomId));
-        const p1 = rooms.get(roomId).players.P1;
-        const p2 = rooms.get(roomId).players.P2;
-        const game = rooms.get(roomId).game;
+        const room = rooms.get(roomId);
+
+        if (!room) return;
+
+        const p1 = room.players.P1;
+        const p2 = room.players.P2;
+        const game = room.game;
 
         if (game.getTurn() === "P1" && data.userId !== p1.id) return;
         if (game.getTurn() === "P2" && data.userId !== p2.id) return;
@@ -75,5 +46,42 @@ export default function gameHandler(io, socket, rooms: Rooms) {
             partida: partida,
             empate: empate,
         }); */
+    });
+
+    socket.on("restart-game", () => {
+        const roomId = socket.data.roomId;
+        let newTurn;
+        let player;
+        if (rooms.get(roomId).game.getFirstTurn() === Player.P1) {
+            newTurn = Player.P2;
+            player = rooms.get(roomId).players.P2.name;
+        } else {
+            newTurn = Player.P1;
+            player = rooms.get(roomId).players.P1.name;
+        }
+
+        const newGame = new Game(newTurn);
+        rooms.get(roomId).game = newGame;
+        io.to(roomId).emit("game-restarted", {
+            turno: player,
+            arrayPartida: newGame.getBoard(),
+            partida: false,
+            empate: newGame.getDraw(),
+        });
+    });
+
+    socket.on("restart-request", () => {
+        let player;
+        if(socket.data.userId  === rooms.get(socket.data.roomId).players.P1.id){
+            player = rooms.get(socket.data.roomId).players.P1.name;
+        }else{
+            player = rooms.get(socket.data.roomId).players.P2.name;
+        }
+      
+
+        socket.to(socket.data.roomId).emit("player-request-to-restart", {
+            playerRequest: player,
+            
+        });
     });
 }

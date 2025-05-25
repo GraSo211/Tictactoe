@@ -21,7 +21,7 @@ export default function (io) {
     
 
     io.on("connection", (socket) => {
-        console.log("La rom apenas estnra es:",rooms)
+
         roomManager(io, socket, rooms);
         gameHandler(io, socket, rooms);
 

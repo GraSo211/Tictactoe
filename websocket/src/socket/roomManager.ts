@@ -8,13 +8,14 @@ export default function roomManager(io, socket, rooms: Rooms) {
     });
 
     socket.on("rejoin-room", (data) => {
+        
         const roomId = data.roomId;
         const userId = data.userId;
         const room = rooms.get(roomId);
-        //console.log(room)
-        
         if (room && (room.players.P1.id === userId || room.players.P2.id === userId)) {
+
             socket.join(data.roomId);
+            socket.data.roomId = roomId;
             let jugadorTurno = "";
             if(room.game.getTurn() === "P1") {
                 jugadorTurno = room.players.P1.name;
@@ -24,6 +25,8 @@ export default function roomManager(io, socket, rooms: Rooms) {
             socket.emit("game-state", {
                 arrayPartida: room.game.getBoard(),
                 jugadorTurno: jugadorTurno,
+                player1: room.players.P1.name,
+                player2: room.players.P2.name,
             });
         }
     });
@@ -113,6 +116,6 @@ export default function roomManager(io, socket, rooms: Rooms) {
             });
         }
 
-        //console.log(rooms);
+
     });
 }
