@@ -9,11 +9,8 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
 
 /* 
     todo: 2 - JUGAR CONTRA LA IA.
-    todo: 5 - REINGRESAR A SALA
-    todo: 10 - CAMBIAR EL REINICIAR PARTIDA PARA QUE UNO LE DE REINICIAR Y ELOTRO DEBA CONFIRMAR
+    todo: 10 - Restart game: Corregir que el nombre del usuario que reinicia la partida no siempre es el mismo que el que se muestra en la UI, y copiarlo para el empate 
     todo: 11 - CONTAR LAS WINS
-
-    
 
 */
 
@@ -24,6 +21,11 @@ export default function Juego() {
 
     const [ventanaUnirse, setVentanaUnirse] = useState<boolean>(false);
     const [ventanaCrear, setVentanaCrear] = useState<boolean>(false);
+
+    const [playerRequestRestart, setPlayerRequestRestart] = useState<string>("");
+
+    const [restartRequested, setRestartRequested] = useState<boolean>(false);
+    const [requestRestart, setRequestRestart] = useState<boolean>(false);
 
     const [player1, setPlayer1] = useState<string>("P1");
     const [player2, setPlayer2] = useState<string>("P2");
@@ -73,6 +75,10 @@ export default function Juego() {
         setVentanaCrear(false);
         setVentanaUnirse(false);
         setRoomId("");
+        setRequestRestart(false);
+        setRestartRequested(false);
+        setPlayerRequestRestart("");
+        setPartida(false);
         localStorage.removeItem("roomId");
     };
 
@@ -93,8 +99,15 @@ export default function Juego() {
     };
 
     // Partida
-    const reiniciarPartida = () => {
+
+    const restartGame = () => {
         socket.emit("restart-game");
+    }
+
+    const requestRestartGame = () => {
+        
+        setRestartRequested(true);
+        socket.emit("restart-request");
     };
 
     const marcarCasilla = (index: number) => {
@@ -102,11 +115,13 @@ export default function Juego() {
     };
 
     useEffect(() => {
+        const storedRoomId = localStorage.getItem("roomId");
+        const storedUserId = localStorage.getItem("userId");
         if (localStorage.getItem("nickname") !== null) setNickname(localStorage.getItem("nickname")!);
-        if (localStorage.getItem("roomId") !== null) setRoomId(localStorage.getItem("roomId")!);
+        if (storedRoomId !== null) setRoomId(storedRoomId);
 
-        if (localStorage.getItem("userId") !== null) {
-            setUserId(localStorage.getItem("userId")!);
+        if (storedUserId !== null) {
+            setUserId(storedUserId!);
         } else {
             const id = uuid();
             localStorage.setItem("userId", id);
@@ -117,15 +132,29 @@ export default function Juego() {
             setPlayerLeft(true);
         });
 
+        if (storedRoomId && storedUserId) {
+            socket.emit("rejoin-room", { roomId: storedRoomId, userId: storedUserId });
+        }
+
         socket.on("connect", () => {
-            if (roomId && userId) {
-                socket.emit("rejoin-room", { roomId: roomId, userId: userId });
+            console.log("Conectado, reintentando rejoin con:", storedRoomId, storedUserId);
+            if (storedRoomId && storedUserId) {
+                socket.emit("rejoin-room", { roomId: storedRoomId, userId: storedUserId });
             }
         });
 
+        socket.on("player-request-to-restart", (data) => {
+            setRequestRestart(true);
+            setPlayerRequestRestart(data.playerRequest);
+        });
+
         socket.on("game-state", (data) => {
+            console.log("Estado de la partida:", data);
             setArray(data.arrayPartida);
             setTurno(data.jugadorTurno);
+            setPlayer1(data.player1);
+            setPlayer2(data.player2);
+            setJuego(true);
         });
 
         socket.on("room-not-found", (data) => {
@@ -172,6 +201,10 @@ export default function Juego() {
         });
 
         socket.on("game-restarted", (data) => {
+            setRestartRequested(false);
+            setRequestRestart(false);
+            setPlayerRequestRestart("");
+            setGanador("");
             setTurno(data.turno);
             setArray(data.arrayPartida);
             setarrayRenderized(data.arrayPartida);
@@ -193,6 +226,9 @@ export default function Juego() {
             socket.off("game-won");
             socket.off("game-restarted");
             socket.off("game-finished");
+            socket.off("connect");
+            socket.off("room-left");
+            socket.off("game-state");
         };
     }, []);
 
@@ -220,14 +256,14 @@ export default function Juego() {
                         <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
                         <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
                         {playerLeft && (
-                            <div className="text-white absolute bg-black/80 w-full flex h-full top-0 left-0 justify-center flex-col gap-2 items-center z-20">
-                                <span className="font-semibold text-2xl">El otro jugador abandono la sala</span>
+                            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-black/80 text-[#D4C9BE] px-4">
+                                <span className="text-3xl font-bold text-center">El otro jugador abandonó la sala</span>
                                 <button
-                                    className="text-[#D4C9BE] text-xl  font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse "
                                     onClick={() => {
                                         leaveRoom();
                                         setPlayerLeft(false);
                                     }}
+                                    className="px-6 py-2 text-lg font-semibold text-black transition-transform duration-300 ease-in-out transform bg-[#D4C9BE] rounded-full shadow-lg hover:scale-105 hover:bg-gray-100 active:scale-95 animate-pulse cursor-pointer"
                                 >
                                     Volver
                                 </button>
@@ -370,12 +406,39 @@ export default function Juego() {
             {partida && (
                 <div className="absolute top-0 left-0 flex   w-screen h-screen  bg-black/90 ">
                     <div className="relative w-full h-full  text-[#D4C9BE] font-semibold flex flex-col  justify-center items-center ">
-                        <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
-                            <h1 className="text-2xl  ">GANÓ {ganador}!</h1>
-                            <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={reiniciarPartida}>
-                                REINICIAR PARTIDA
-                            </button>
-                        </span>
+                        {!requestRestart ? (
+                            <span className="border flex flex-col gap-3 relative  p-10 rounded-sm  ">
+                                {!restartRequested ? (
+                                    <div>
+                                        <h1 className="text-2xl  ">GANÓ {ganador}!</h1>
+                                        <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={requestRestartGame}>
+                                            REINICIAR PARTIDA
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col justify-center items-center ">
+                                        <h4 className="text-[#D4C9BE] text-xl text-center ">Se envio la solicitud </h4>
+                                        <span className="flex gap-3 justify-center items-center">
+                                            <p className="text-[#D4C9BE] text-sm text-center ">Esperando Confirmación </p>
+                                            <BallTriangle className="w-6" />
+                                        </span>
+                                        <button  className="text-[#D4C9BE] text-sm absolute bottom-2 right-2 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={leaveRoom}>
+                                            Abandonar
+                                        </button>
+                                    </div>
+                                )}
+                            </span>
+                        ) : (
+                            <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
+                                <h1 className="text-2xl  ">{playerRequestRestart} quiere volver a jugar</h1>
+                                <span className="flex gap-3 justify-center items-center">
+                                    <button className="text-white" onClick={restartGame}>Volver a Jugar</button>
+                                    <button  className="text-[#D4C9BE] font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={leaveRoom}>
+                                        Abandonar
+                                    </button>
+                                </span>
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
@@ -385,7 +448,7 @@ export default function Juego() {
                     <div className="relative w-full h-full  text-[#D4C9BE] font-semibold flex flex-col  justify-center items-center ">
                         <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
                             <h1 className="text-2xl  ">EMPATE</h1>
-                            <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={reiniciarPartida}>
+                            <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={requestRestartGame}>
                                 REINICIAR PARTIDA
                             </button>
                         </span>
