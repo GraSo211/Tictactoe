@@ -7,19 +7,26 @@ export default function roomManager(io, socket, rooms: Rooms) {
         rooms.delete(roomId);
     });
 
-    /*  socket.on("rejoin-room", (data) => {
-        const room = rooms[data.roomId];
-        if (room && (room.P1 === data.userId || room.P2 === data.userId)) {
+    socket.on("rejoin-room", (data) => {
+        const roomId = data.roomId;
+        const userId = data.userId;
+        const room = rooms.get(roomId);
+        //console.log(room)
+        
+        if (room && (room.players.P1.id === userId || room.players.P2.id === userId)) {
             socket.join(data.roomId);
-            const jugadorTurno = turno === "P1" ? players.P1 : players.P2;
+            let jugadorTurno = "";
+            if(room.game.getTurn() === "P1") {
+                jugadorTurno = room.players.P1.name;
+            }else{
+                jugadorTurno = room.players.P2.name;
+            }
             socket.emit("game-state", {
-                arrayPartida: arrayPartida,
-                turno: turno,
+                arrayPartida: room.game.getBoard(),
                 jugadorTurno: jugadorTurno,
             });
         }
     });
- */
 
     socket.on("leave-room", (data) => {
         const roomId = data.roomId;
@@ -106,6 +113,6 @@ export default function roomManager(io, socket, rooms: Rooms) {
             });
         }
 
-        console.log(rooms);
+        //console.log(rooms);
     });
 }

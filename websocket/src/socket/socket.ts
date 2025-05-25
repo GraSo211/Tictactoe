@@ -16,16 +16,15 @@ export type Room = {
 };
 
 export type Rooms = Map<string, Room>;
-
+const rooms: Rooms = new Map();
 export default function (io) {
-    const rooms: Rooms = new Map();
+    
 
     io.on("connection", (socket) => {
+        console.log("La rom apenas estnra es:",rooms)
         roomManager(io, socket, rooms);
         gameHandler(io, socket, rooms);
 
-        socket.on("disconnect", () => {
-            const roomId = socket.data.roomId;
-        });
+        
     });
 }

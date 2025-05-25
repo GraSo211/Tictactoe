@@ -20,10 +20,10 @@ export default function gameHandler(io, socket, rooms: Rooms) {
         let player;
         if (rooms.get(roomId).game.getFirstTurn() === Player.P1) {
             newTurn = Player.P2;
-            player = rooms.get(roomId).players.P2.name
+            player = rooms.get(roomId).players.P2.name;
         } else {
             newTurn = Player.P1;
-            player = rooms.get(roomId).players.P1.name
+            player = rooms.get(roomId).players.P1.name;
         }
 
         const newGame = new Game(newTurn);
@@ -38,9 +38,11 @@ export default function gameHandler(io, socket, rooms: Rooms) {
 
     socket.on("make-move", (data) => {
         const roomId = socket.data.roomId;
+        //console.log("Rooms:", rooms.get(roomId));
         const p1 = rooms.get(roomId).players.P1;
         const p2 = rooms.get(roomId).players.P2;
         const game = rooms.get(roomId).game;
+
         if (game.getTurn() === "P1" && data.userId !== p1.id) return;
         if (game.getTurn() === "P2" && data.userId !== p2.id) return;
 
