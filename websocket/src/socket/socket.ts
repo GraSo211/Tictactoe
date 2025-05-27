@@ -26,5 +26,6 @@ export default function (io) {
         gameHandler(io, socket, rooms);
 
         
-    });
+    }); 
 }
+ 
