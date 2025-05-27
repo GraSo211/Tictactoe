@@ -92,6 +92,7 @@ export default function roomManager(io, socket, rooms: Rooms) {
 
         socket.join(roomId);
         socket.data.roomId = roomId;
+        socket.data.userId = data.userId;
 
         // Asignar roles
         if (!room.players.P1 || !room.players.P1.id) {

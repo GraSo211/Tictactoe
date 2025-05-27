@@ -72,16 +72,18 @@ export default function gameHandler(io, socket, rooms: Rooms) {
 
     socket.on("restart-request", () => {
         let player;
-        if(socket.data.userId  === rooms.get(socket.data.roomId).players.P1.id){
+        console.log("socket.userId:", socket.data.userId);
+        console.log("P2.id:", rooms.get(socket.data.roomId).players.P2.id);
+
+        if (socket.data.userId === rooms.get(socket.data.roomId).players.P1.id) {
             player = rooms.get(socket.data.roomId).players.P1.name;
-        }else{
+        }
+        if (socket.data.userId === rooms.get(socket.data.roomId).players.P2.id) {
             player = rooms.get(socket.data.roomId).players.P2.name;
         }
-      
 
         socket.to(socket.data.roomId).emit("player-request-to-restart", {
             playerRequest: player,
-            
         });
     });
 }
