@@ -9,7 +9,6 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
 
 /* 
     todo: 2 - JUGAR CONTRA LA IA.
-    todo: 10 - Restart game: Corregir que el nombre del usuario que reinicia la partida no siempre es el mismo que el que se muestra en la UI, y copiarlo para el empate 
     todo: 11 - CONTAR LAS WINS
 
 */
@@ -79,6 +78,7 @@ export default function Juego() {
         setRestartRequested(false);
         setPlayerRequestRestart("");
         setPartida(false);
+        setEmpate(false);
         localStorage.removeItem("roomId");
     };
 
@@ -102,10 +102,9 @@ export default function Juego() {
 
     const restartGame = () => {
         socket.emit("restart-game");
-    }
+    };
 
     const requestRestartGame = () => {
-        
         setRestartRequested(true);
         socket.emit("restart-request");
     };
@@ -205,6 +204,7 @@ export default function Juego() {
             setRequestRestart(false);
             setPlayerRequestRestart("");
             setGanador("");
+            setEmpate(false);
             setTurno(data.turno);
             setArray(data.arrayPartida);
             setarrayRenderized(data.arrayPartida);
@@ -270,7 +270,7 @@ export default function Juego() {
                             </div>
                         )}
                         <button
-                            className="text-[#D4C9BE] text-xl absolute bottom-5 right-10 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse "
+                            className=" text-xl absolute bottom-5 right-10 text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-red-700 cursor-pointer  duration-500   "
                             onClick={() => {
                                 leaveRoom();
                             }}
@@ -422,18 +422,23 @@ export default function Juego() {
                                             <p className="text-[#D4C9BE] text-sm text-center ">Esperando Confirmación </p>
                                             <BallTriangle className="w-6" />
                                         </span>
-                                        <button  className="text-[#D4C9BE] text-sm absolute bottom-2 right-2 font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={leaveRoom}>
+                                        <button
+                                            className="text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-105 hover:text-red-700 text-sm absolute bottom-2 right-2 cursor-pointer  duration-500  "
+                                            onClick={leaveRoom}
+                                        >
                                             Abandonar
                                         </button>
                                     </div>
                                 )}
                             </span>
                         ) : (
-                            <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
-                                <h1 className="text-2xl  ">{playerRequestRestart} quiere volver a jugar</h1>
-                                <span className="flex gap-3 justify-center items-center">
-                                    <button className="text-white" onClick={restartGame}>Volver a Jugar</button>
-                                    <button  className="text-[#D4C9BE] font-semibold cursor-pointer hover:scale-105 duration-500 transition-all animate-pulse " onClick={leaveRoom}>
+                            <span className="border border-neutral-300  shadow-md rounded-lg p-8 flex flex-col gap-6 items-center">
+                                <h1 className="text-2xl font-semibold text-[#D4C9BE] text-center">{playerRequestRestart} quiere volver a jugar</h1>
+                                <span className="flex gap-6 justify-center items-center">
+                                    <button className="text-green-600 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-green-800" onClick={restartGame}>
+                                        Volver a Jugar
+                                    </button>
+                                    <button className="text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-red-700" onClick={leaveRoom}>
                                         Abandonar
                                     </button>
                                 </span>
@@ -446,12 +451,44 @@ export default function Juego() {
             {empate && (
                 <div className="absolute top-0 left-0 flex   w-screen h-screen  bg-black/90 ">
                     <div className="relative w-full h-full  text-[#D4C9BE] font-semibold flex flex-col  justify-center items-center ">
-                        <span className="border flex flex-col gap-3  p-10 rounded-sm  ">
-                            <h1 className="text-2xl  ">EMPATE</h1>
-                            <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={requestRestartGame}>
-                                REINICIAR PARTIDA
-                            </button>
-                        </span>
+                        {!requestRestart ? (
+                            <span className="border flex flex-col gap-3 relative  p-10 rounded-sm  ">
+                                {!restartRequested ? (
+                                    <div>
+                                        <h1 className="text-2xl  ">EMPATE</h1>
+                                        <button className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-125 " onClick={requestRestartGame}>
+                                            REINICIAR PARTIDA
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col justify-center items-center ">
+                                        <h4 className="text-[#D4C9BE] text-xl text-center ">Se envio la solicitud </h4>
+                                        <span className="flex gap-3 justify-center items-center">
+                                            <p className="text-[#D4C9BE] text-sm text-center ">Esperando Confirmación </p>
+                                            <BallTriangle className="w-6" />
+                                        </span>
+                                        <button
+                                            className="text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-105 hover:text-red-700 text-sm absolute bottom-2 right-2 cursor-pointer  duration-500  "
+                                            onClick={leaveRoom}
+                                        >
+                                            Abandonar
+                                        </button>
+                                    </div>
+                                )}
+                            </span>
+                        ) : (
+                            <span className="border border-neutral-300  shadow-md rounded-lg p-8 flex flex-col gap-6 items-center">
+                                <h1 className="text-2xl font-semibold text-[#D4C9BE] text-center">{playerRequestRestart} quiere volver a jugar</h1>
+                                <span className="flex gap-6 justify-center items-center">
+                                    <button className="text-green-600 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-green-800" onClick={restartGame}>
+                                        Volver a Jugar
+                                    </button>
+                                    <button className="text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-red-700" onClick={leaveRoom}>
+                                        Abandonar
+                                    </button>
+                                </span>
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
