@@ -8,18 +8,18 @@ export default function roomManager(io, socket, rooms: Rooms) {
     });
 
     socket.on("rejoin-room", (data) => {
-        
         const roomId = data.roomId;
         const userId = data.userId;
+
         const room = rooms.get(roomId);
         if (room && (room.players.P1.id === userId || room.players.P2.id === userId)) {
-
             socket.join(data.roomId);
             socket.data.roomId = roomId;
+            socket.data.userId = data.userId;
             let jugadorTurno = "";
-            if(room.game.getTurn() === "P1") {
+            if (room.game.getTurn() === "P1") {
                 jugadorTurno = room.players.P1.name;
-            }else{
+            } else {
                 jugadorTurno = room.players.P2.name;
             }
             socket.emit("game-state", {
@@ -70,6 +70,33 @@ export default function roomManager(io, socket, rooms: Rooms) {
         });
     });
 
+    socket.on("create-room-vs-ia", (data) => {
+        const roomId = crypto.randomUUID();
+        socket.join(roomId);
+        socket.data.roomId = roomId;
+        socket.data.userId = data.userId;
+        rooms.set(roomId, {
+            game: null,
+            players: {
+                P1: { id: data.userId, name: data.nickname },
+                P2: { id: "IA", name: "IA" },
+            },
+        });
+        const room = rooms.get(roomId);
+        const GAME = new Game(Player.P1);
+        room.game = GAME;
+
+        io.to(roomId).emit("room-vs-ia-created", {
+            roomId: roomId,
+            nickname: data.nickname,
+            userId: data.userId,
+            turno: room.players.P1.name,
+            player1: room.players.P1.name,
+            player2: room.players.P2.name,
+            arrayPartida: GAME.getBoard(),
+        });
+    });
+
     socket.on("join-room", (data) => {
         const roomId = data.roomId;
         const room = rooms.get(roomId);
@@ -116,7 +143,5 @@ export default function roomManager(io, socket, rooms: Rooms) {
                 arrayPartida: GAME.getBoard(),
             });
         }
-
-
     });
 }

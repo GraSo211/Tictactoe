@@ -17,6 +17,37 @@ export default function gameHandler(io, socket, rooms: Rooms) {
         if (game.getTurn() === "P1" && data.userId !== p1.id) return;
         if (game.getTurn() === "P2" && data.userId !== p2.id) return;
 
+        if (p2.id === "IA") {
+            if (game.getTurn() === "P1" && data.userId !== p1.id) return;
+            if (game.getTurn() === "P2" && data.userId !== p2.id) return;
+
+            setTimeout(() => {
+                game.makeMoveIA();
+                const jugadorTurno = game.getTurn() === "P1" ? p1.name : p2.name;
+                io.to(roomId).emit("move-made", { arrayPartida: game.getBoard(), turno: game.getTurn(), jugadorTurno: jugadorTurno });
+
+                if (game.getWinner()) {
+                    let winner;
+                    if (game.getWinner() == "P1") {
+                        winner = rooms.get(roomId).players.P1.name;
+                    } else {
+                        winner = rooms.get(roomId).players.P2.name;
+                    }
+                    io.to(roomId).emit("game-won", {
+                        ganador: winner,
+                        winnerId: game.getWinner(),
+                        partida: game.getGameStatus(),
+                    });
+                }
+
+                if (game.getDraw()) {
+                    io.to(roomId).emit("game-finished", {
+                        sultado: game.getDraw(),
+                    });
+                }
+            }, Math.random() * 1000 + 500); 
+        }
+
         game.makeMove(data.index);
         const jugadorTurno = game.getTurn() === "P1" ? p1.name : p2.name;
         io.to(roomId).emit("move-made", { arrayPartida: game.getBoard(), turno: game.getTurn(), jugadorTurno: jugadorTurno });
@@ -30,22 +61,16 @@ export default function gameHandler(io, socket, rooms: Rooms) {
             }
             io.to(roomId).emit("game-won", {
                 ganador: winner,
+                winnerId: game.getWinner(),
                 partida: game.getGameStatus(),
             });
         }
 
         if (game.getDraw()) {
             io.to(roomId).emit("game-finished", {
-                resultado: game.getDraw(),
+                sultado: game.getDraw(),
             });
         }
-
-        /*      io.to(roomId).emit("game-restarted", {
-            turno: turno,
-            arrayPartida: arrayPartida,
-            partida: partida,
-            empate: empate,
-        }); */
     });
 
     socket.on("restart-game", () => {

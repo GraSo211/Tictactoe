@@ -1,12 +1,12 @@
 export enum Player {
     P1 = "P1",
-    P2 = "P2"
+    P2 = "P2",
 }
 
 enum GameStatus {
     NOT_STARTED = 0,
     IN_PROGRESS = "EN JUEGO",
-    FINISHED = 1
+    FINISHED = 1,
 }
 
 // Posibles combinaciones de victoria
@@ -21,10 +21,8 @@ const WIN = [
     [2, 5, 8],
 ];
 
-
-
 export class Game {
-    id:string
+    id: string;
     // Estado FALSE: NO INICIADO, EN JUEGO: EN JUEGO, TRUE: FINALIZADO
     gameStatus: GameStatus = GameStatus.NOT_STARTED;
     // Ganador
@@ -36,38 +34,37 @@ export class Game {
     // Empate
     draw: boolean;
 
-    firstTurn: Player
+    firstTurn: Player;
 
     // CONSTRUCTOR
-    constructor(turn:Player) {
+    constructor(turn: Player) {
         this.id = crypto.randomUUID();
         this.gameStatus = GameStatus.IN_PROGRESS;
-        this.turn = turn
-        this.firstTurn = turn
+        this.turn = turn;
+        this.firstTurn = turn;
     }
 
-    public getFirstTurn(){
+    public getFirstTurn() {
         return this.firstTurn;
     }
 
-    public getWinner(){
+    public getWinner() {
         return this.winner;
     }
 
-    public getTurn(){
+    public getTurn() {
         return this.turn;
     }
 
-    public getBoard(){
+    public getBoard() {
         return this.board;
     }
 
-    public getGameStatus(){
+    public getGameStatus() {
         return this.gameStatus;
-
     }
 
-    public getDraw(){
+    public getDraw() {
         return this.draw;
     }
 
@@ -87,7 +84,7 @@ export class Game {
         this.winner = player;
     }
 
-    private setDraw(draw:boolean){
+    private setDraw(draw: boolean) {
         this.draw = draw;
     }
 
@@ -131,5 +128,18 @@ export class Game {
         }
         this.setDraw(true);
         this.setGameStatus(GameStatus.FINISHED);
+    }
+
+    private getBestMove(){
+        return 1
+    }
+
+    public makeMoveIA() {
+        // IA hace su jugada
+        let index = this.getBestMove();
+        if (index === -1) {
+            return;
+        }
+        this.makeMove(5);
     }
 }
