@@ -77,8 +77,8 @@ export default function Juego() {
         localStorage.setItem("numberWinsP2", "0");
         localStorage.setItem("numberWinsP1", "0");
 
-        await new Promise<void>((resolve)=> {
-            const handler = (data:any) => {
+        await new Promise<void>((resolve) => {
+            const handler = (data: any) => {
                 socket.off("game-created");
                 setRoomId(data.roomId);
                 setNickname(data.nickname);
@@ -90,7 +90,6 @@ export default function Juego() {
                 setarrayRenderized(data.arrayPartida);
                 setJuego(true);
                 resolve();
-                
             };
             socket.on("room-vs-ia-created", handler);
         });
@@ -218,6 +217,12 @@ export default function Juego() {
         });
 
         socket.on("move-made", (data) => {
+            setArray(data.arrayPartida);
+            setTurno(data.jugadorTurno);
+
+        });
+
+        socket.on("move-made-by-ia", (data) => {
             setArray(data.arrayPartida);
             setTurno(data.jugadorTurno);
         });
