@@ -130,16 +130,110 @@ export class Game {
         this.setGameStatus(GameStatus.FINISHED);
     }
 
-    private getBestMove(){
-        return 1
+    private checkWinnerIA(board: string[]): Player {
+        let winnerSimulated;
+        for (const combination of WIN) {
+            const [a, b, c] = combination;
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                return (winnerSimulated = board[a] === "1" ? Player.P1 : Player.P2);
+            }
+        }
+        return null;
+    }
+
+    private isTerminal(board: string[]): boolean {
+        return this.checkWinnerIA(board) !== null || board.every((cell) => cell !== null);
+    }
+
+    private getAvailableMoves(board: string[]): number[] {
+        return board.map((cell, index) => (cell === null ? index : -1)).filter((index) => index !== -1);
+    }
+
+    private evaluate(board: string[]): number {
+        const winnerSimulated = this.checkWinnerIA(board);
+        if (winnerSimulated === "P2") return +1;
+        if (winnerSimulated === "P1") return -1;
+        return 0; // empate o no terminado
+    }
+
+    private heuristicMoveOrder(moves: number[]): number[] {
+        const centro = [4];
+        const esquinas = [0, 2, 6, 8];
+        const laterales = [1, 3, 5, 7];
+        return [...moves.filter((m) => centro.includes(m)), ...moves.filter((m) => esquinas.includes(m)), ...moves.filter((m) => laterales.includes(m))];
+    }
+
+    private minimaxAB(board: string[], isMax: boolean, depth: number, alpha: number, beta: number): number {
+        if (this.isTerminal(board)) {
+            const score = this.evaluate(board);
+            return score === 1 ? score - depth : score + depth;
+        }
+
+        const moves = this.getAvailableMoves(board);
+
+        if (isMax) {
+            let value = -Infinity;
+            for (const m of moves) {
+                const b2 = [...board];
+                b2[m] = "0";
+                value = Math.max(value, this.minimaxAB(b2, false, depth + 1, alpha, beta));
+                alpha = Math.max(alpha, value);
+                if (alpha >= beta) break;
+            }
+            return value;
+        } else {
+            let value = Infinity;
+            for (const m of moves) {
+                const b2 = [...board];
+                b2[m] = "1";
+                value = Math.min(value, this.minimaxAB(b2, true, depth + 1, alpha, beta));
+                beta = Math.min(beta, value);
+                if (beta <= alpha) break;
+            }
+            return value;
+        }
+    }
+    private getBestMoveAB(board: string[]): number {
+        for (const m of this.getAvailableMoves(board)) {
+            const b2 = [...board];
+            b2[m] = "0"; // IA
+            if (this.checkWinnerIA(b2) === Player.P2) {
+                return m;
+            }
+        }
+
+        for (const m of this.getAvailableMoves(board)) {
+            const b2 = [...board];
+            b2[m] = "1"; // humano
+            if (this.checkWinnerIA(b2) === Player.P1) {
+                return m;
+            }
+        }
+
+        let bestScore = -Infinity;
+        let bestMove = -1;
+        const moves = this.heuristicMoveOrder(this.getAvailableMoves(board));
+        console.log(moves);
+        for (const m of moves) {
+            if (m === 4) {
+                bestMove = m;
+                break;
+            }
+            const b2 = [...board];
+            b2[m] = "0";
+            const score = this.minimaxAB(b2, false, 0, -Infinity, +Infinity);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = m;
+            }
+        }
+        return bestMove;
     }
 
     public makeMoveIA() {
-        // IA hace su jugada
-        let index = this.getBestMove();
-        if (index === -1) {
-            return;
+        const best = this.getBestMoveAB(this.board) as number;
+        if (best >= 0) {
+            this.makeMove(best);
         }
-        this.makeMove(5);
     }
 }
