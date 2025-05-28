@@ -300,9 +300,9 @@ export default function Juego() {
             {nickname ? (
                 juegoIniciado ? (
                     <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
-                        <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
+                        <Turno signo={<RxCircle className="text-blue-500 size-8  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
                         <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno} numberWinsP1={numberWinsP1} numberWinsP2={numberWinsP2}></Tablero>
-                        <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
+                        <Turno signo={<RxCross2 className="text-red-400 size-8 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
                         {playerLeft && (
                             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-black/80 text-[#D4C9BE] px-4">
                                 <span className="text-3xl font-bold text-center">El otro jugador abandonó la sala</span>
@@ -318,7 +318,7 @@ export default function Juego() {
                             </div>
                         )}
                         <button
-                            className=" text-xl absolute bottom-5 right-10 text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-red-700 cursor-pointer  duration-500   "
+                            className=" text-xl col-start-2   lg:absolute bottom-5 right-10 text-red-500 font-bold animate-pulse hover:animate-none transition-transform hover:scale-125 hover:text-red-700 cursor-pointer  duration-500   "
                             onClick={() => {
                                 leaveRoom();
                             }}
