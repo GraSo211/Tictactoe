@@ -9,8 +9,6 @@ import BallTriangle from "react-loading-icons/dist/esm/components/ball-triangle"
 
 /* 
     todo: 2 - JUGAR CONTRA LA IA.
-    todo: 11 - CONTAR LAS WINS
-
 */
 
 export default function Juego() {
@@ -22,6 +20,9 @@ export default function Juego() {
     const [ventanaCrear, setVentanaCrear] = useState<boolean>(false);
 
     const [playerRequestRestart, setPlayerRequestRestart] = useState<string>("");
+
+    const [numberWinsP1, setNumberWinsP1] = useState<number>(0);
+    const [numberWinsP2, setNumberWinsP2] = useState<number>(0);
 
     const [restartRequested, setRestartRequested] = useState<boolean>(false);
     const [requestRestart, setRequestRestart] = useState<boolean>(false);
@@ -69,6 +70,32 @@ export default function Juego() {
         cleanupAfterLeave();
     };
 
+    const gameVSIA = async () => {
+        socket.emit("create-room-vs-ia", { nickname: nickname, userId: userId });
+        setNumberWinsP1(0);
+        setNumberWinsP2(0);
+        localStorage.setItem("numberWinsP2", "0");
+        localStorage.setItem("numberWinsP1", "0");
+
+        await new Promise<void>((resolve)=> {
+            const handler = (data:any) => {
+                socket.off("game-created");
+                setRoomId(data.roomId);
+                setNickname(data.nickname);
+                setUserId(data.userId);
+                setTurno(data.turno);
+                setPlayer1(data.player1);
+                setPlayer2(data.player2);
+                setArray(data.arrayPartida);
+                setarrayRenderized(data.arrayPartida);
+                setJuego(true);
+                resolve();
+                
+            };
+            socket.on("room-vs-ia-created", handler);
+        });
+    };
+
     const cleanupAfterLeave = () => {
         setJuego(false);
         setVentanaCrear(false);
@@ -91,10 +118,18 @@ export default function Juego() {
     // Salas
     const createRoom = () => {
         socket.emit("create-room", { nickname: nickname, userId: userId });
+        setNumberWinsP1(0);
+        setNumberWinsP2(0);
+        localStorage.setItem("numberWinsP2", "0");
+        localStorage.setItem("numberWinsP1", "0");
         setVentanaCrear(true);
     };
 
     const joinRoom = () => {
+        setNumberWinsP1(0);
+        setNumberWinsP2(0);
+        localStorage.setItem("numberWinsP2", "0");
+        localStorage.setItem("numberWinsP1", "0");
         setVentanaUnirse(true);
     };
 
@@ -116,6 +151,10 @@ export default function Juego() {
     useEffect(() => {
         const storedRoomId = localStorage.getItem("roomId");
         const storedUserId = localStorage.getItem("userId");
+        const storedWinsP1 = localStorage.getItem("numberWinsP1");
+        const storedWinsP2 = localStorage.getItem("numberWinsP2");
+        if (storedWinsP1 !== null) setNumberWinsP1(parseInt(storedWinsP1));
+        if (storedWinsP2 !== null) setNumberWinsP2(parseInt(storedWinsP2));
         if (localStorage.getItem("nickname") !== null) setNickname(localStorage.getItem("nickname")!);
         if (storedRoomId !== null) setRoomId(storedRoomId);
 
@@ -136,7 +175,6 @@ export default function Juego() {
         }
 
         socket.on("connect", () => {
-            console.log("Conectado, reintentando rejoin con:", storedRoomId, storedUserId);
             if (storedRoomId && storedUserId) {
                 socket.emit("rejoin-room", { roomId: storedRoomId, userId: storedUserId });
             }
@@ -148,7 +186,6 @@ export default function Juego() {
         });
 
         socket.on("game-state", (data) => {
-            console.log("Estado de la partida:", data);
             setArray(data.arrayPartida);
             setTurno(data.jugadorTurno);
             setPlayer1(data.player1);
@@ -163,21 +200,12 @@ export default function Juego() {
             }, 2000);
         });
 
-        socket.on("game-players", (data) => {
-            setPlayer1(data.player1);
-            setPlayer2(data.player2);
-        });
-
         socket.on("room-created", (data) => {
             setNickname(data.nickname);
             setRoomId(data.roomId);
             localStorage.setItem("roomId", data.roomId);
             setUserId(data.userId);
             socket.emit("join-room", { roomId: data.roomId, nickname: data.nickname, userId: data.userId });
-        });
-
-        socket.on("room-joined", (message) => {
-            console.log(message);
         });
 
         socket.on("start-game", (data) => {
@@ -196,6 +224,21 @@ export default function Juego() {
 
         socket.on("game-won", (data) => {
             setGanador(data.ganador);
+
+            if (data.winnerId === player1) {
+                setNumberWinsP1((prev) => {
+                    const updated = prev + 1;
+                    localStorage.setItem("numberWinsP1", updated.toString());
+                    return updated;
+                });
+            } else if (data.winnerId === player2) {
+                setNumberWinsP2((prev) => {
+                    const updated = prev + 1;
+                    localStorage.setItem("numberWinsP2", updated.toString());
+                    return updated;
+                });
+            }
+
             setPartida(data.partida);
         });
 
@@ -253,7 +296,7 @@ export default function Juego() {
                 juegoIniciado ? (
                     <div className=" w-full h-full grid grid-cols-[1fr_2fr_1fr]  place-items-center  ">
                         <Turno signo={<RxCircle className="text-blue-500 size-10  xl:size-14"></RxCircle>} jugadorNombre={player1} seleccionado={turno}></Turno>
-                        <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno}></Tablero>
+                        <Tablero tabla={arrayRenderized} marcar={marcarCasilla} array={arrayRenderized} turno={turno} numberWinsP1={numberWinsP1} numberWinsP2={numberWinsP2}></Tablero>
                         <Turno signo={<RxCross2 className="text-red-400 size-10 xl:size-14"></RxCross2>} jugadorNombre={player2} seleccionado={turno}></Turno>
                         {playerLeft && (
                             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-black/80 text-[#D4C9BE] px-4">
@@ -293,7 +336,7 @@ export default function Juego() {
                         </button>
                         <button
                             className=" hover:text-gray-600  cursor-pointer animate-pulse hover:animate-none transition-transform hover:scale-120  text-[#D4C9BE] font-semibold"
-                            onClick={() => setJuego(true)}
+                            onClick={() => gameVSIA()}
                         >
                             JUGAR CONTRA LA IA
                         </button>
@@ -331,6 +374,7 @@ export default function Juego() {
                                             if (refRoom.current) {
                                                 setRoomId(refRoom.current.value);
                                                 localStorage.setItem("roomId", refRoom.current.value);
+
                                                 socket.emit("join-room", {
                                                     roomId: refRoom.current.value,
                                                     nickname: nickname,

@@ -5,9 +5,12 @@ type Props = {
     marcar: (celda: number) => void;
     array: Array<string>;
     turno: string;
+    numberWinsP1?: number;
+    numberWinsP2?: number;
 };
 
-export default function Tablero({ tabla, marcar, array, turno }: Props) {
+export default function Tablero({ tabla, marcar, array, turno, numberWinsP1, numberWinsP2 }: Props) {
+    
     return (
         <div className="flex flex-col justify-center items-center gap-5">
             <span className="flex flex-col gap-1">
@@ -20,6 +23,10 @@ export default function Tablero({ tabla, marcar, array, turno }: Props) {
                     return <Celda key={filaIndex} index={filaIndex} marcar={marcar} array={array}></Celda>;
                 })}
             </div>
+            <span className="text-white mt-5">
+                <h4 className="text-2xl font-semibold">MARCADOR</h4>
+                <p className="font-bold text-lg"><span className="text-blue-500 "> {numberWinsP1 || 0}</span> - <span className="text-red-500 "> {numberWinsP2 || 0}</span> </p>
+            </span>
         </div>
     );
 }
