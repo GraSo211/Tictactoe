@@ -25,6 +25,7 @@ export default function gameHandler(io, socket, rooms: Rooms) {
             let winner;
             if (game.getWinner() == "P1") {
                 winner = rooms.get(roomId).players.P1.name;
+                
             } else {
                 winner = rooms.get(roomId).players.P2.name;
             }
@@ -41,7 +42,7 @@ export default function gameHandler(io, socket, rooms: Rooms) {
             });
         }
 
-        if (p2.id === "IA" && game.getTurn() === "P2") {
+        if (p2.id === "IA" && game.getTurn() === "P2" && !game.getWinner() && !game.getDraw()) {
             setTimeout(() => {
                 game.makeMoveIA();
                 io.to(roomId).emit("move-made-by-ia", {
